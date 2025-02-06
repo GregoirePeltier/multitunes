@@ -103,5 +103,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - Audio separation powered by Demucs
-- External music data provided by Spotify API
+- External music data provided by deezer radio API
 - Additional music metadata from MusicBrainz
