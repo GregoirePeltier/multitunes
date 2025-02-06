@@ -25,7 +25,7 @@ describe('Audio Processing Service', () => {
             mockRedis.publish.mockImplementation((key, value) => Promise.resolve(1));
             mockRedis.hset.mockImplementation((key, ...feildValues) => Promise.resolve(0));
             let track: Track = {
-                id: "track_test", name: "track_test", previewUrl: "http://test.com",
+                id: 1, title: "track_test", preview: "http://test.com",
                 artist: "test"
             }
             await service.submitTrack(track);
@@ -36,7 +36,7 @@ describe('Audio Processing Service', () => {
                 {
                     trackId: track.id,
                     status: 'pending',
-                    previewUrl: track.previewUrl
+                    preview: track.preview,
                 }
             );
             let [audio_key, audio_value] = mockRedis.publish.mock.calls[0] as [string, string];

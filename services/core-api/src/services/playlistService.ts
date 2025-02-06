@@ -13,16 +13,24 @@ export class PlaylistService {
         this.redis = redis;
     }
     async getRandomTracklist(): Promise<Track[]> {
-        let radios = (await axios.get("https://api.deezer.com/radio")).data;
+        let radios = (await axios.get("https://api.deezer.com/radio")).data.data;
+        radios = radios.filter((r:any ) => r.title.toLowerCase().includes("rock") || r.title.toLowerCase().includes("pop"));
         let radio = radios[Math.floor(Math.random() * Math.min(radios.length, 10))];
-        let tracks = (await axios.get(radio.tracklist)).data;
+        let tracks = (await axios.get(radio.tracklist)).data.data;
+        tracks = tracks.map((t:any) => ({
+            id:t.id,
+            title:t.title,
+            preview:t.preview,
+            artist:t.artist.name,
+            album:t.album.title,
+        }))
         return tracks;
     }
     async generatePlaylist(params: {
         trackCount?: number;
     } = {}): Promise<Track[]> {
         let selectedTracks = await this.getRandomTracklist()
-        selectedTracks = selectedTracks.filter(t=>t.preview!=undefined).slice(0, params.trackCount || 10);
+        selectedTracks = selectedTracks.filter(t=>t.preview!=undefined && t.preview!=null && t.preview!="").slice(0, params.trackCount || 10);
         // Cache selected tracks
         await Promise.all(selectedTracks.map(track =>
             this.redis.hset(`track:${track.id}`, track)

@@ -22,7 +22,7 @@ export class AudioProcessingService {
         await this.redis.hset(`job:${jobId}`, {
             trackId: track.id,
             status: 'pending',
-            previewUrl: track.previewUrl,
+            preview: track.preview,
         });
 
         // Notify audio processor

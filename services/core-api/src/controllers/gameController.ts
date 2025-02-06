@@ -1,12 +1,15 @@
 import {GameStatus, GameStatusValue} from "../models/Game";
 import {Redis} from 'ioredis';
+import {PlaylistService} from "../services/playlistService";
 
 export class GameController {
 
     private redis: Redis;
+    private playlistService: PlaylistService;
 
-    constructor(redis: Redis) {
+    constructor(redis: Redis, playlistService: PlaylistService) {
         this.redis = redis;
+        this.playlistService=playlistService;
     }
 
     async getOrCreateMainGame(): Promise<string> {
@@ -22,9 +25,11 @@ export class GameController {
     async createGame(): Promise<string> {
         // Generate new playlist
         const gameId = crypto.randomUUID();
+        const playlist = await this.playlistService.generatePlaylist();
         // Store game state
         await this.redis.set(`game:${gameId}`, JSON.stringify({
             status: GameStatusValue.INITIALIZING,
+            playlist,
         }));
         return gameId;
     }

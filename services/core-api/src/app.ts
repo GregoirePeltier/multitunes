@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 import gameRoutes from "./routes/gameRoutes";
 import {GameController} from "./controllers/gameController";
 import redis from "./config/redis";
+import { PlaylistService } from './services/playlistService';
 
 dotenv.config();
 const app = express();
-
-const gameController = new GameController(redis);
+const playlistService = new PlaylistService(redis);
+const gameController = new GameController(redis,playlistService);
 
 app.use(cors());
 app.use(express.json());
