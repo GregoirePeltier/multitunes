@@ -22,7 +22,7 @@ export class AudioProcessingService {
         await this.redis.hset(`job:${jobId}`, {
             trackId: track.id,
             status: 'pending',
-            previewUrl: track.previewUrl
+            previewUrl: track.previewUrl,
         });
 
         // Notify audio processor
@@ -32,7 +32,7 @@ export class AudioProcessingService {
 
     async getJobStatus(jobId: string): Promise<ProcessingJob> {
         const job = await this.redis.hgetall(`job:${jobId}`);
-        if (!job) throw new Error('Job not found');
+        if (job.trackId==undefined) throw new Error('Job not found');
 
         return {
             trackId: job.trackId,
