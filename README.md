@@ -38,7 +38,6 @@ _This project should heavily feature ai generated code_
 - GameServer, to handle realtime communication in elixir
 - PostgreSQL database for user data and statistics
 - Redis for caching and real-time features
-- WebSocket server for multiplayer coordination
 
 ### External Services Integration
 - Music Streaming API Integration
@@ -58,8 +57,8 @@ _This project should heavily feature ai generated code_
      - Vocals
      - Drums
      - Bass
-	 - Guitar
-	 - Piano
+     - Guitar
+     - Piano
      - Other instruments
    - Processes and optimizes separated tracks for streaming
 
@@ -74,78 +73,15 @@ Redis >= 6
 ```
 
 ### Installation
-1. Clone the repository
-```bash
-git clone https://github.com/your-org/music-quiz
-cd music-quiz
-```
-
-2. Install dependencies
-```bash
-npm install
-```
-
-3. Configure environment variables
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-4. Start development servers
-```bash
-npm run dev
-```
+=========== TODO ==============
 
 ## API Documentation
-
-### Authentication
-All API endpoints except public routes require JWT authentication.
-
-### Core Endpoints
-
-#### Playlist Management
-```
-GET /api/playlists
-POST /api/playlists/create
-GET /api/playlists/:id
-DELETE /api/playlists/:id
-```
-
-#### Quiz Management
-```
-GET /api/quizzes
-POST /api/quizzes/create
-GET /api/quizzes/:id
-POST /api/quizzes/:id/submit
-```
-
-#### Audio Processing
-```
-POST /api/audio/process
-GET /api/audio/:id/status
-GET /api/audio/:id/stream/:track
-```
+=========== TODO ==============
 
 ## Deployment
-
-### Docker Deployment
-```bash
-docker-compose up -d
-```
-
-### Manual Deployment
-1. Build the application
-```bash
-npm run build
-```
-
-2. Start the server
-```bash
-npm run start
-```
+============ TODO ============
 
 ## Security Considerations
-
 - Rate limiting on API endpoints
 - Input validation for user submissions
 - Secure audio file processing
@@ -160,20 +96,12 @@ npm run start
 - WebSocket connection pooling
 - Lazy loading of audio tracks
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit changes
-4. Push to the branch
-5. Create a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Acknowledgments
 
-- Audio separation powered by Spleeter
+- Audio separation powered by Demucs
 - External music data provided by Spotify API
 - Additional music metadata from MusicBrainz
