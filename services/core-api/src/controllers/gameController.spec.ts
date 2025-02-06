@@ -2,12 +2,13 @@ import {GameController} from "../controllers/gameController";
 import {Redis} from "ioredis";
 import {GameStatusValue} from "../models/Game";
 import {PlaylistService} from "../services/playlistService";
+import {AudioProcessingService} from "../services/audioProcessingService";
 
 describe('Game Controller', () => {
     let controller: GameController
     let mockRedis: jest.Mocked<Redis>;
     let mockPlaylistService: jest.Mocked<PlaylistService>;
-
+    let mockAudioProcessingService: jest.Mocked<AudioProcessingService>;
     beforeEach(() => {
 
         mockRedis = {
@@ -17,8 +18,11 @@ describe('Game Controller', () => {
         mockPlaylistService = {
             generatePlaylist: jest.fn(),
         } as any;
-
-        controller = new GameController(mockRedis, mockPlaylistService);
+        mockAudioProcessingService = {
+            submitTrack: jest.fn(),
+            getJobStatus: jest.fn(),
+        } as any;
+        controller = new GameController(mockRedis, mockPlaylistService,mockAudioProcessingService);
     });
     describe('getOrCreateMainGame', () => {
 
@@ -53,11 +57,13 @@ describe('Game Controller', () => {
                 {id: 4, title: 'test', preview: 'test', artist: 'test'},
             ];
             mockPlaylistService.generatePlaylist.mockImplementationOnce(() => Promise.resolve(playlist));
+            let id = 0;
+            mockAudioProcessingService.submitTrack.mockImplementation(() => {id++;return Promise.resolve(id.toString())});
             await controller.createGame();
             expect(mockRedis.set).toHaveBeenCalled();
             let [key, value] = mockRedis.set.mock.calls[0];
-            expect(value).toEqual(JSON.stringify({status: GameStatusValue.INITIALIZING,playlist}));
-
+            expect(value).toEqual(JSON.stringify({status: GameStatusValue.INITIALIZING,playlist,processingJobs:["1","2","3","4"]}));
+            expect(mockAudioProcessingService.submitTrack).toHaveBeenCalledTimes(4);
         })
     })
 
