@@ -1,0 +1,6 @@
+fastapi==0.68.0
+uvicorn==0.15.0
+spleeter==2.3.0
+celery==5.2.3
+redis==4.3.4
+python-dotenv==0.19.0

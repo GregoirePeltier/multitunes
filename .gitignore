@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+.elixir_ls/
+
+# Environment
+.env
+.env.local
+
+# Build outputs
+dist/
+build/
+_build/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
