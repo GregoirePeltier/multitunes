@@ -3,11 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import gameRoutes from "./routes/gameRoutes";
 import {GameController} from "./controllers/gameController";
+import redis from "./config/redis";
 
 dotenv.config();
 const app = express();
 
-const gameController = new GameController();
+const gameController = new GameController(redis);
 
 app.use(cors());
 app.use(express.json());

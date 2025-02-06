@@ -1,6 +1,7 @@
 
 import {GameController} from "../controllers/gameController";
 import {Redis} from "ioredis";
+import {GameStatusValue} from "../models/Game";
 
 describe('Game Controller', () => {
   let controller:GameController
@@ -36,7 +37,16 @@ describe('Game Controller', () => {
         expect(gameId).not.toBeNull();
         expect(mockRedis.get).toHaveBeenCalled();
         expect(mockRedis.set).toHaveBeenCalled();
-    })
+    });
   });
+  describe("createGame", () => {
+      it("Should set a new game value in redis, initializing",async ()=>{
+          mockRedis.set.mockImplementationOnce((key, value)=>Promise.resolve("result"));
+          await controller.createGame();
+          expect(mockRedis.set).toHaveBeenCalled();
+          let [key,value] = mockRedis.set.mock.calls[0];
+          expect(value).toEqual(JSON.stringify({status:GameStatusValue.INITIALIZING}));
+      })
+  })
 
 });

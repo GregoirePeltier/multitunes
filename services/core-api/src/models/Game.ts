@@ -3,7 +3,8 @@ export interface Game{
 }
 export enum GameStatusValue{
     ACTIVE="active",
-    ENDED="ended"
+    ENDED="ended",
+    INITIALIZING="initializing",
 }
 export interface GameStatus{
     status:GameStatusValue,
