@@ -50,7 +50,7 @@ describe('Game Routes', () => {
     const mockStatus = { status:GameStatusValue.ACTIVE , players: 2 };
 
     it('should return game status', async () => {
-      mockGameController.checkGameStatus.mockImplementation((id:any)=>Promise.resolve(mockStatus));
+      mockGameController.checkGameStatus.mockImplementation((_:any)=>Promise.resolve(mockStatus));
 
       const response = await request(app)
         .post(`/api/game/${mockGameId}/status`)

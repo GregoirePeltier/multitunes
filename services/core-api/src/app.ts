@@ -15,5 +15,6 @@ app.use('/api/game', gameRoutes(gameController));
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy' });
 });
-
+const port = process.env.PORT || 3333;
+app.listen(port, () => console.log(`Server running on port ${port}`));
 export default app;
