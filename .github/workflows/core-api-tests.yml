@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'services/core-api/**'
+      - '.github/workflows/core-api-tests.yml'
+
   pull_request:
     paths:
       - 'services/core-api/**'

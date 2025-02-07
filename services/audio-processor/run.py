@@ -9,7 +9,7 @@ if __name__ == "__main__":
         "app.main:app",
         host="0.0.0.0",
         port=settings.API_PORT,
-        reload=True,
+        reload=False,
         reload_dirs=["app"],
         log_level="debug" if settings.DEBUG else "info",
         
