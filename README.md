@@ -110,6 +110,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## TODO
 _this is a dev note of things that are still to be done_
+## Technical
+_misc of technical remiders_
+- The track is not updated when the audio processing is done
 ## Critical
 _This is breaking the app_
 ## Needed

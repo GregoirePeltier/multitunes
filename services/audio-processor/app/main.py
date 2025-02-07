@@ -39,7 +39,7 @@ print(f"Connected to GCS bucket {BUCKET_NAME}")
 # Initialize Demucs
 MODEL_NAME = "htdemucs"
 model = None
-
+processing_semaphore = asyncio.Semaphore(1)
 def get_demucs_model():
     global model
     if model is None:
@@ -55,7 +55,6 @@ class ProcessingJob(BaseModel):
 async def download_preview(url: str, target_path: str):
     """Download preview file from URL"""
     async with aiohttp.ClientSession() as session:
-        print(session.get(url))
         async with session.get(url) as response:
             if response.status == 200:
                 with open(target_path, 'wb') as f:
@@ -66,6 +65,7 @@ async def download_preview(url: str, target_path: str):
 def process_audio(input_path: str, output_dir: str,on_separation_progress=None) -> Dict[str, str]:
     """Split audio into stems using Demucs"""
     def separation_callback(data):
+        logging.info(f"Separation progress: {data}")
         if on_separation_progress:
             progress = data["segment_offset"]/data["audio_length"] * 100
             on_separation_progress(progress)
@@ -95,47 +95,48 @@ def upload_to_gcs(local_path: str, gcs_path: str) -> str:
 
 async def process_job(job: ProcessingJob):
     """Process a single audio job"""
-    try:
-        logger.info(f"Starting processing job {job.job_id}")
-        
-        # Update job status
-        redis_client.hset(f"job:{job.job_id}", "status", "processing")
-        
-        # Create temporary directory for processing
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Download preview
-            input_path = os.path.join(temp_dir, "input.mp3")
-            await download_preview(job.preview_url, input_path)
-            # Process audio
-            stem_paths = process_audio(input_path, temp_dir)
-            
-            # Upload stems to GCS and get URLs
-            stem_urls = {}
-            for stem_name, local_path in stem_paths.items():
-                gcs_path = f"stems/{job.track_id}/{stem_name}.mp3"
-                public_url = upload_to_gcs(local_path, gcs_path)
-                stem_urls[stem_name] = public_url
-            
-            # Update job status with stem URLs
+    async with processing_semaphore:
+        try:
+            logger.info(f"Starting processing job {job.job_id}")
+
+            # Update job status
+            await redis_client.hset(f"job:{job.job_id}", "status", "processing")
+
+            # Create temporary directory for processing
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Download preview
+                input_path = os.path.join(temp_dir, "input.mp3")
+                await download_preview(job.preview_url, input_path)
+                # Process audio
+                stem_paths = process_audio(input_path, temp_dir)
+
+                # Upload stems to GCS and get URLs
+                stem_urls = {}
+                for stem_name, local_path in stem_paths.items():
+                    gcs_path = f"stems/{job.track_id}/{stem_name}.mp3"
+                    public_url = upload_to_gcs(local_path, gcs_path)
+                    stem_urls[stem_name] = public_url
+
+                # Update job status with stem URLs
+                await redis_client.hset(
+                    f"job:{job.job_id}",
+                    mapping={
+                        "status": "completed",
+                        "instruments": json.dumps(stem_urls)
+                    }
+                )
+
+                logger.info(f"Completed processing job {job.job_id}")
+
+        except Exception as e:
+            logger.error(f"Error processing job {job.job_id}: {str(e)}")
             await redis_client.hset(
                 f"job:{job.job_id}",
                 mapping={
-                    "status": "completed",
-                    "instruments": json.dumps(stem_urls)
+                    "status": "error",
+                    "error": str(e)
                 }
             )
-            
-            logger.info(f"Completed processing job {job.job_id}")
-            
-    except Exception as e:
-        logger.error(f"Error processing job {job.job_id}: {str(e)}")
-        await redis_client.hset(
-            f"job:{job.job_id}",
-            mapping={
-                "status": "error",
-                "error": str(e)
-            }
-        )
 
 # Redis subscriber for processing jobs
 async def subscribe_to_jobs():
@@ -154,12 +155,21 @@ async def subscribe_to_jobs():
                 asyncio.create_task(process_job(job))
             except Exception as e:
                 logger.error(f"Error processing message: {str(e)}")
+async def recover_pending():
+    """Recover pending jobs from Redis"""
+    while True:
+        await asyncio.sleep(1)
+        async for key in redis_client.scan_iter("job:*"):
+            job = await redis_client.hgetall(key)
+            if job.get(b"status") == b"pending":
+                logging.info(f"Recovering pending job {key}")
+                await process_job(ProcessingJob(jobId=key.decode().split(":")[1],**{key.decode():value.decode() for key,value in job.items()}))
 
 @app.on_event("startup")
 async def startup_event():
     """Start Redis subscriber on startup"""
     asyncio.create_task(subscribe_to_jobs())
-
+    asyncio.create_task(recover_pending())
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
