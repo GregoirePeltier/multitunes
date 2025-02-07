@@ -1,15 +1,17 @@
-!# .github/workflows/audio-processor.yml
+# .github/workflows/audio-processor.yml
 name: Audio Processor CI/CD
 
 on:
   push:
+    branches: [ main ]
     paths:
       - 'services/audio-processor/**'
       - '.github/workflows/audio-processor.yml'
   pull_request:
+    branches: [ main ]
     paths:
       - 'services/audio-processor/**'
-
+  workflow_dispatch:  # Manual trigger
 
 env:
   PYTHON_VERSION: '3.9'
