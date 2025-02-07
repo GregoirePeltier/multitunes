@@ -23,6 +23,6 @@ jobs:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: services/core-api/package-lock.json
-      
+      - run: npm install
       - run: npm ci
       - run: npm test
