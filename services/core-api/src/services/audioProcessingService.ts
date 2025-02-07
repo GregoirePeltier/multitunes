@@ -19,14 +19,15 @@ export class AudioProcessingService {
 
     async submitTrack(track: Track): Promise<string> {
         const jobId = crypto.randomUUID();
-        await this.redis.hset(`job:${jobId}`, {
+        let processing_job = {
             trackId: track.id,
             status: 'pending',
             preview: track.preview,
-        });
+        };
+        await this.redis.hset(`job:${jobId}`, processing_job);
 
         // Notify audio processor
-        await this.redis.publish('audio:process', JSON.stringify({jobId, track}));
+        await this.redis.publish('audio:process', JSON.stringify({jobId, ...processing_job}));
         return jobId;
     }
 

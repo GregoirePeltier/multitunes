@@ -32,15 +32,16 @@ describe('Audio Processing Service', () => {
             expect(mockRedis.hset).toHaveBeenCalled();
             let [key, value] = mockRedis.hset.mock.calls[0] as [string, object];
             let jobId = key.slice(key.indexOf(":") + 1);
+            let processing_job = {
+                trackId: track.id,
+                status: 'pending',
+                preview: track.preview,
+            };
             expect(value).toEqual(
-                {
-                    trackId: track.id,
-                    status: 'pending',
-                    preview: track.preview,
-                }
+                processing_job
             );
             let [audio_key, audio_value] = mockRedis.publish.mock.calls[0] as [string, string];
-            expect(JSON.parse(audio_value)).toEqual({jobId, track});
+            expect(JSON.parse(audio_value)).toEqual({jobId, ...processing_job});
 
         });
 

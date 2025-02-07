@@ -66,6 +66,7 @@ _This project should heavily feature ai generated code_
 
 ### Prerequisites
 ```bash
+python >=3.8
 node >= 16.0.0
 npm >= 7.0.0
 PostgreSQL >= 13

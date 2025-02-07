@@ -1,0 +1,67 @@
+# .github/workflows/audio-processor.yml
+name: Audio Processor CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/audio-processor/**'
+      - '.github/workflows/audio-processor.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'services/audio-processor/**'
+  workflow_dispatch:  # Manual trigger
+
+env:
+  PYTHON_VERSION: '3.9'
+  SERVICE_NAME: audio-processor
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libsndfile1
+
+      - name: Install dependencies
+        working-directory: ./services/audio-processor
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cpu.txt
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+
+      - name: Create dummy GCP credentials for testing
+        run: |
+          echo '{"type": "service_account"}' > /tmp/gcp-credentials.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-credentials.json" >> $GITHUB_ENV
+
+      - name: Run tests with coverage
+        working-directory: ./services/audio-processor
+        env:
+          REDIS_URL: redis://localhost:6379
+          GCS_BUCKET_NAME: test-bucket
+        run: |
+          pytest --cov=app --cov-report=xml
