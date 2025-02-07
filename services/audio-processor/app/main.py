@@ -31,9 +31,10 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_client = redis.from_url(REDIS_URL)
 
 # Initialize GCS
-BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+BUCKET_NAME = settings.GCS_BUCKET_NAME
 storage_client = storage.Client()
 bucket = storage_client.bucket(BUCKET_NAME)
+print(f"Connected to GCS bucket {BUCKET_NAME}")
 
 # Initialize Demucs
 MODEL_NAME = "htdemucs"
@@ -90,7 +91,6 @@ def upload_to_gcs(local_path: str, gcs_path: str) -> str:
     """Upload file to Google Cloud Storage and return public URL"""
     blob = bucket.blob(gcs_path)
     blob.upload_from_filename(local_path)
-    blob.make_public()
     return blob.public_url
 
 async def process_job(job: ProcessingJob):

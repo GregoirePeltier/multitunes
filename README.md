@@ -106,3 +106,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Audio separation powered by Demucs
 - External music data provided by deezer radio API
 - Additional music metadata from MusicBrainz
+
+
+## TODO
+_this is a dev note of things that are still to be done_
+## Critical
+_This is breaking the app_
+## Needed
+_This is needed to consider the app done_
+- Have a mechanism to take up the task, if no runner were active when the audio processing task was launch 
+## Nice to have
+_Things that would be nice to have, but not required_
