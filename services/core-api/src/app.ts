@@ -3,15 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import gameRoutes from "./routes/gameRoutes";
 import {GameController} from "./controllers/gameController";
-import redis from "./config/redis";
+
 import { PlaylistService } from './services/playlistService';
-import {AudioProcessingService} from "./services/audioProcessingService";
 
 dotenv.config();
 const app = express();
 const playlistService = new PlaylistService(redis);
-const audioProcessingService = new AudioProcessingService(redis);
-const gameController = new GameController(redis,playlistService,audioProcessingService);
+const gameController = new GameController(playlistService);
 
 app.use(cors());
 app.use(express.json());

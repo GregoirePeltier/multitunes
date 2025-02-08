@@ -1,44 +1,48 @@
-import {GameStatus, GameStatusValue} from "../models/Game";
+import {Answer, Game, GameStatus, GameStatusValue, Question} from "../models/Game";
 import {Redis} from 'ioredis';
 import {PlaylistService} from "../services/playlistService";
-import {AudioProcessingService} from "../services/audioProcessingService";
+import {Track} from "../models/track";
+import {randomInt} from "node:crypto";
 
 export class GameController {
 
-    private redis: Redis;
     private playlistService: PlaylistService;
-    private audioProcessingService: AudioProcessingService;
 
-    constructor(redis: Redis, playlistService: PlaylistService,audioProcessingService: AudioProcessingService) {
-        this.redis = redis;
-        this.playlistService=playlistService;
-        this.audioProcessingService = audioProcessingService;
+
+    constructor(playlistService: PlaylistService) {
+        this.playlistService = playlistService;
     }
 
-    async getOrCreateMainGame(): Promise<string> {
-        const mainGame = await this.redis.get("game:main");
-        if (mainGame) {
-            return mainGame;
-        }
-        const newMainGameId = await this.createGame();
-        await this.redis.set("game:main", newMainGameId);
-        return newMainGameId
-    }
-
-    async createGame(): Promise<string> {
+    async createGame(): Promise<Game> {
         // Generate new playlist
         const gameId = crypto.randomUUID();
-        const playlist = await this.playlistService.generatePlaylist({trackCount:5});
-        let processingJobs = await Promise.all(playlist.map(async track => {
-            return await this.audioProcessingService.submitTrack(track);
-        }))
+        const playlist = await this.playlistService.generatePlaylist({trackCount: 5});
+        let availables = Array.from(await this.playlistService.getAvailableTrackIds());
         // Store game state
-        await this.redis.set(`game:${gameId}`, JSON.stringify({
-            status: GameStatusValue.INITIALIZING,
-            playlist,
-            processingJobs,
-        }));
-        return gameId;
+        console.log("Creating Questions")
+        const questions: Question[] = await Promise.all(playlist.map(async (t) => {
+            let other = [t.id]
+
+            while (other.length < 5) {
+                let newValue = availables[randomInt(0, availables.length)];
+                if (!other.includes(newValue)) {
+                    other.push(newValue)
+                }
+            }
+            let answers: Array<Answer> = await Promise.all(other.map(async (id) => {
+                return {id, title: (await this.playlistService.getTrack(id)).title}
+            }))
+
+            return {
+                track: t,
+                answers: answers
+            }
+        }))
+        const game: Game = {
+            questions: questions
+
+        }
+        return game;
     }
 
     async checkGameStatus(gameId: string): Promise<GameStatus> {

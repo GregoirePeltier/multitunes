@@ -2,7 +2,8 @@ export interface Track {
   id: number;
   title: string;
   artist: string;
-  preview: string;
+  preview?: string;
+  cover: string;
 }
 
 

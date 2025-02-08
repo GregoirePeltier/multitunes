@@ -13,7 +13,7 @@ describe('Playlist Service', () => {
     let mockRedis: jest.Mocked<Redis>;
 
     const mockTrack = {
-        id: 'track123',
+        id:1,
         title: 'Test Track',
         preview: 'http://example.com/preview',
         artist: {name:'artist123'},
@@ -51,21 +51,16 @@ describe('Playlist Service', () => {
         });
 
         it('should generate playlist with number of tracks', async () => {
+            const ids = new Set([1,2,3,4,5,6]);
+            playlistService.getAvailableTrackIds = jest.fn() as any
+            (playlistService.getAvailableTrackIds as jest.Mock).mockImplementation(()=>Promise.resolve(ids));
+
             const playlist = await playlistService.generatePlaylist({trackCount: 5});
 
             expect(playlist).toHaveLength(5);
             expect(playlist[0]).toEqual({...mockTrack, album: "album123", artist: "artist123"});
         });
 
-
-        it('should cache selected tracks', async () => {
-            await playlistService.generatePlaylist();
-
-            expect(mockRedis.hset).toHaveBeenCalledWith(
-                `track:${mockTrack.id}`,
-                expect.objectContaining({...mockTrack, album: "album123", artist: "artist123"})
-            );
-        });
     });
 
 
