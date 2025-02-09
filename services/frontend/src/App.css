@@ -8,6 +8,10 @@
     flex-direction: row;
     justify-content: space-around;
 }
+.genre-list{
+    display: flex;
+    flex-wrap: wrap;
+}
 .button{
     font-size: 1.5em;
     margin: 0.5em;

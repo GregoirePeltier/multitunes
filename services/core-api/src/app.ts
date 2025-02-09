@@ -10,8 +10,8 @@ dotenv.config();
 const app = express();
 const playlistService = new PlaylistService();
 const gameController = new GameController(playlistService);
-
-app.use(cors());
+let origin = process.env.TS_NODE_DEV?"http://localhost:8080":'https://multitunes.app';
+app.use(cors({ origin: origin}));
 app.use(express.json());
 app.use('/api/game', gameRoutes(gameController));
 app.get('/health', (req, res) => {

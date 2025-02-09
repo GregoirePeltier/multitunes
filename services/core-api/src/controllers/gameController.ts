@@ -14,24 +14,36 @@ export class GameController {
         this.playlistService = playlistService;
     }
 
-    async createGame(): Promise<Game> {
+    async createGame(options?:{genreId:number}): Promise<Game> {
+        const genreId = options?.genreId;
         // Generate new playlist
         const gameId = crypto.randomUUID();
-        const playlist = await this.playlistService.generatePlaylist({trackCount: 5});
-        let availables = Array.from(await this.playlistService.getAvailableTrackIds());
+        let tracks = await this.playlistService.generatePlaylist({styleId: genreId});
+        tracks = Utils.shuffleArray(tracks);
+
+        let playlist = tracks.slice(0, 5);
+        let anyTrack = Array.from(await this.playlistService.getAvailableTrackIds());
+        let availables = tracks.slice(5).map(t => t.id);
+        while (availables.length <=20) {
+            availables.push(anyTrack[randomInt(0, anyTrack.length)]);
+        }
+        let picked = new Set(playlist.map(t => t.id));
         // Store game state
         const questions: Question[] = await Promise.all(playlist.map(async (t) => {
             let other = [t.id]
-
-            while (other.length < 5) {
+            while (other.length < 5 && availables.length > 0) {
                 let newValue = availables[randomInt(0, availables.length)];
-                if (!other.includes(newValue)) {
+                availables = availables.filter(id => id != newValue);
+                if (!other.includes(newValue) && !picked.has(newValue)) {
+                    picked.add(newValue);
                     other.push(newValue)
                 }
             }
+
             let answers: Array<Answer> = await Promise.all(other.map(async (id) => {
                 return {id, title: (await this.playlistService.getTrack(id)).title}
             }))
+
             answers = Utils.shuffleArray(answers)
             return {
                 track: t,

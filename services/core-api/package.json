@@ -21,6 +21,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "ioredis": "^5.4.2",
+    "ipaddr": "^0.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.13.1",
     "redis": "^4.7.0",

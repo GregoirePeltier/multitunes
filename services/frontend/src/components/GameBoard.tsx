@@ -9,6 +9,7 @@ import {QuestionResult} from "./QuestionResult.tsx";
 import {TrackChipView} from "./TrackChipView.tsx";
 import {LoadingState} from "./LoadingState.tsx";
 import {LoadingScreen} from "./LoadingScreen.tsx";
+import {useParams} from "react-router-dom";
 
 const gameService = new GameService();
 
@@ -22,6 +23,7 @@ export enum GamePhase {
 }
 
 export function GameBoard() {
+    const {genre} = useParams();
     const [game, setGame] = useState<Game | null>();
     const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.UNKNOWN);
     const [currentTrack, setCurrentTrack] = useState(0)
@@ -32,12 +34,11 @@ export function GameBoard() {
     const [points, setPoints] = useState<Array<number>>([])
     const [activeStems, setActiveStems] = useState<StemType[]>([])
     useEffect(() => {
-        console.log("mouting")
         if (!game && gamePhase === GamePhase.UNKNOWN) {
             let cancel = false
             setGamePhase(GamePhase.LOADING)
             setLoadingState({gameLoaded: false, stemLoading: []})
-            gameService.getNewGame().then((game) => {
+            gameService.getNewGame(genre).then((game) => {
                 if (cancel) return
                 setGame(game);
                 setLoadingState({gameLoaded: true, stemLoading: new Array(game.questions.length)})

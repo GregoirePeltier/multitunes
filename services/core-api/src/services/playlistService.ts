@@ -14,7 +14,7 @@ export class PlaylistService {
     private storage: Storage;
     private bucketName: string;
 
-    constructor( bucketName: string = 'multitune-stem-storage') {
+    constructor(bucketName: string = 'multitune-stem-storage') {
         this.storage = new Storage({keyFilename: process.env["GOOGLE_APPLICATION_CREDENTIALS"]});
         this.bucketName = bucketName;
     }
@@ -25,7 +25,6 @@ export class PlaylistService {
                 const response = await this.storage.bucket(this.bucketName).getFiles({
                     prefix: 'stems/',
                 });
-                console.log(response);
                 const [files] = response;
                 for (const file of files) {
                     // File paths are in format: stems/[trackId]/[instrument].mp3
@@ -44,15 +43,23 @@ export class PlaylistService {
         return this.availableIds
     }
 
-    async getRandomTracklist(): Promise<Track[]> {
-        let radios = (await axios.get("https://api.deezer.com/radio")).data.data;
-        radios = radios.filter((r: any) => r.title.toLowerCase().includes("rock") || r.title.toLowerCase().includes("pop"));
-        let radio = radios[Math.floor(Math.random() * Math.min(radios.length, 10))];
+    async getRandomTracklist(styleId?: number): Promise<Track[]> {
+        let radio;
+        if (styleId) {
+            let rados = (await axios.get(`https://api.deezer.com/genre/${styleId}/radios`)).data.data;
+            radio = rados[Math.floor(Math.random() * Math.min(rados.length, 10))];
+        } else {
+            let radios = (await axios.get("https://api.deezer.com/radio")).data.data;
+            radios = radios.filter((r: any) => r.title.toLowerCase().includes("rock") || r.title.toLowerCase().includes("pop"));
+            radio = radios[Math.floor(Math.random() * Math.min(radios.length, 10))];
+        }
+
         let tracks = undefined;
-        while(!tracks){
+        while (!tracks) {
             tracks = (await axios.get(radio.tracklist)).data.data;
         }
-        tracks = tracks.filter((t:any)=>t.artist!=undefined)
+        tracks = tracks.filter((t: any) => t.title)
+        tracks = tracks.filter((t: any) => t.artist != undefined)
         tracks = tracks.map((t: any) => ({
             id: t.id,
             title: t.title,
@@ -65,23 +72,20 @@ export class PlaylistService {
     }
 
     async generatePlaylist(params: {
-        trackCount?: number;
+        styleId?: number;
     } = {}): Promise<Track[]> {
         const availableIds = await this.getAvailableTrackIds()
-        let selectedTracks:Array<Track> = []
-        let trackCount = params.trackCount|| 5;
-        while (selectedTracks.length < trackCount) {
+        let selectedTracks: Array<Track> = []
 
-            selectedTracks = await this.getRandomTracklist()
-            selectedTracks = Utils.shuffleArray(selectedTracks)
-            selectedTracks = selectedTracks.filter(t => availableIds.has(t.id)).slice(0, trackCount);
-        }
+        selectedTracks = await this.getRandomTracklist(params.styleId)
+        selectedTracks = Utils.shuffleArray(selectedTracks)
+        selectedTracks = selectedTracks.filter(t => availableIds.has(t.id));
 
 
         return selectedTracks;
     }
 
-    async getTrack(id: number):Promise<Track>{
+    async getTrack(id: number): Promise<Track> {
         let response = await axios.get(`https://api.deezer.com/track/${id}`);
         let t = response.data;
         return {

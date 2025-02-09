@@ -33,6 +33,20 @@ const Home = () => (
         <Link to="/play" className="play-button">
                 Start Playing
             </Link>
+            <div>Or play with theses genres (still in beta)</div>
+
+        <div className={"genre-list"}>
+            <Link className={"button"} to={"/play/152"}>Rock</Link>
+            <Link className={"button"} to={"/play/132"}>Pop</Link>
+            <Link className={"button"} to={"/play/116"}>Rap</Link>
+            <Link className={"button"} to={"/play/464"}>Metal</Link>
+            <Link className={"button"} to={"/play/165"}>RNB</Link>
+            <Link className={"button"} to={"/play/466"}>Folk</Link>
+            <Link className={"button"} to={"/play/84"}>Country</Link>
+            <Link className={"button"} to={"/play/52"}>French</Link>
+            <Link className={"button"} to={"/play/169"}>Soul</Link>
+            <Link className={"button"} to={"/play/153"}>Blues</Link>
+        </div>
     </div>
 );
 
@@ -48,7 +62,8 @@ const App = () => {
                     <AppLayout>
                         <Routes>
                             <Route index element={<Home/>}/>
-                            <Route path="play" element={<Play/>}/>
+                            <Route path="play/:genre" element={<Play/>}/>
+                            <Route path="play/" element={<Play/>}/>
                             <Route path="*" element={
                                 <div className="text-center py-12">
                                     <h2 className="text-2xl font-bold mb-4">404 - Page Not Found</h2>
