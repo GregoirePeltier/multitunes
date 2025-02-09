@@ -22,7 +22,7 @@ describe('Playlist Service', () => {
 
     beforeEach(() => {
         mockRedis = new Redis() as jest.Mocked<Redis>;
-        playlistService = new PlaylistService(mockRedis);
+        playlistService = new PlaylistService();
     });
 
 
