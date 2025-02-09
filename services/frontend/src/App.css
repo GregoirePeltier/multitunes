@@ -44,6 +44,81 @@
     border-radius: 0.5em;
     margin: 0.5em;
 }
+.player{
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.game-board{
+    display: grid;
+    grid-template-rows: 1fr 9fr;
+    min-height: 100%;
+}
+.game-board .play-area{
+    min-height: 100%;
+    background-color: #EAEAEA;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.answer-board{
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.question-result{
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card{
+    min-width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    border-radius: 0.5em;
+    margin: 0.5em;
+}
+.m-auto{
+    margin: auto;
+}
+.track-card .track-cover{
+    width: 90%;
+    border-radius: 0.5em;
+    margin: 0.5em 0.2em 0.2em;
+
+}
+.track-card .track-title{
+    font-size: 2em;
+    font-weight: 700;
+}
+.track-card .track-artist{
+    font-size: 1em;
+    font-weight: 200;
+}
+
+.button{
+    font-size: 1.5em;
+    margin: 0.5em;
+    padding: 0.5em;
+    box-shadow: #02223C 1px 1px 1px;
+    border-radius: 0.5em;
+    background-color: white;
+}
+.answer-board .answer-button{
+    font-size: 1.5em;
+    margin: 0.5em;
+    padding: 0.5em;
+    box-shadow: #02223C 1px 1px 1px;
+    border-radius: 0.5em;
+    background-color: white;
+}
 .body{
     position: absolute;
     top:0;

@@ -3,6 +3,7 @@ import {Redis} from 'ioredis';
 import {PlaylistService} from "../services/playlistService";
 import {Track} from "../models/track";
 import {randomInt} from "node:crypto";
+import {Utils} from "../utils";
 
 export class GameController {
 
@@ -32,7 +33,7 @@ export class GameController {
             let answers: Array<Answer> = await Promise.all(other.map(async (id) => {
                 return {id, title: (await this.playlistService.getTrack(id)).title}
             }))
-
+            answers = Utils.shuffleArray(answers)
             return {
                 track: t,
                 answers: answers

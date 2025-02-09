@@ -2,6 +2,7 @@ import {Track} from "../models/track";
 import {Redis} from "ioredis";
 import axios from 'axios';
 import {Storage} from '@google-cloud/storage';
+import {Utils} from "../utils";
 
 /**
  * Responsible for generating track playlists
@@ -9,13 +10,11 @@ import {Storage} from '@google-cloud/storage';
  * Ask the deezer radio for a list of tracks
  */
 export class PlaylistService {
-    private redis: Redis
     private availableIds: Set<number> = new Set();
     private storage: Storage;
     private bucketName: string;
 
-    constructor(redis: Redis, bucketName: string = 'multitune-stem-storage') {
-        this.redis = redis;
+    constructor( bucketName: string = 'multitune-stem-storage') {
         this.storage = new Storage({keyFilename: process.env["GOOGLE_APPLICATION_CREDENTIALS"]});
         this.bucketName = bucketName;
     }
@@ -56,6 +55,7 @@ export class PlaylistService {
             preview: t.preview,
             artist: t.artist.name,
             album: t.album.title,
+            cover: t.album.cover_big,
         }))
         return tracks;
     }
@@ -69,6 +69,7 @@ export class PlaylistService {
         while (selectedTracks.length < trackCount) {
 
             selectedTracks = await this.getRandomTracklist()
+            selectedTracks = Utils.shuffleArray(selectedTracks)
             selectedTracks = selectedTracks.filter(t => availableIds.has(t.id)).slice(0, trackCount);
         }
 
@@ -84,8 +85,7 @@ export class PlaylistService {
             title: t.title,
             preview: t.preview,
             artist: t.artist.name,
-            cover: t.album.cover,
-
+            cover: t.album.cover_big,
         }
     }
 }

@@ -8,7 +8,7 @@ import { PlaylistService } from './services/playlistService';
 
 dotenv.config();
 const app = express();
-const playlistService = new PlaylistService(redis);
+const playlistService = new PlaylistService();
 const gameController = new GameController(playlistService);
 
 app.use(cors());

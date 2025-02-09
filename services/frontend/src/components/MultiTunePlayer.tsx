@@ -1,17 +1,18 @@
 // @flow
 
-import {Track} from "../model/Track.ts";
-import {STEMS, StemType, TrackService} from "../services/track_service.ts";
+import {Stem, StemType, Track} from "../model/Track.ts";
 import {useEffect, useState} from "react";
+import {ProgressBar} from "./ProgressBar.tsx";
 
 type Props = {
-    track: Track;
+    stems: Array<Stem>;
+    onReachedEnd: () => void;
+    isPlaying: boolean;
 };
-type StemAudio = {
+export type StemAudio = {
     stem: StemType,
     audio: HTMLAudioElement,
 };
-type StemLoading = Array<[StemType, boolean]>
 const STEM_TIMES = new Map<StemType, number>(
     [
         [StemType.DRUMS, 10],
@@ -23,102 +24,72 @@ const STEM_TIMES = new Map<StemType, number>(
     ]
 )
 
-function ProgressBar(props: { audioTracks: Array<StemAudio> }) {
-    const [time, setTime] = useState(0);
-    const [activeStems,setActiveStems] = useState<StemType[]>([]);
-    const progress = (time / 30)*100
-    const stems = props.audioTracks.map((track) => track.stem);
+export function MultiTunePlayer(props: Props) {
+    const { stems, isPlaying} = props;
+    const [stemAudios, setStemAudios] = useState<Array<StemAudio>>([]);
+
+    const reachedEnd = () => {
+        stemAudios.forEach((t) => {
+            t.audio.pause()
+        })
+        props.onReachedEnd();
+    }
     useEffect(() => {
-        props.audioTracks.forEach((t) => {
-            const audio = t.audio
-            audio.addEventListener("volumechange", () =>
-            {
-                if (audio.volume!=0){
-                    setActiveStems((stems)=>[...stems.filter(s=>s!=t.stem),t.stem])
+        stemAudios.forEach(({audio}) => {
+            if (audio.paused && isPlaying) {
+                audio.play();
+            } else if (!audio.paused && !isPlaying) {
+                audio.pause()
+            }
+        })
+    }, [stemAudios, isPlaying]);
+    useEffect(() => {
+        if (!stems ){return}
+        setStemAudios([]);
+        const stemAudios = stems.map((stem) => {
+            const audio = new Audio();
+            audio.src = stem.stemBlobUrl
+            audio.volume = 0;
+            audio.loop = false;
+            return {
+                stem: stem.stemType,
+                audio: audio
+            }
+        })
+        stemAudios[0].audio.addEventListener("timeupdate", () => {
+            if (stemAudios[0].audio.currentTime >= 10) {
+                reachedEnd()
+            }
+            stemAudios.forEach(({stem, audio}) => {
+                const currentTime = audio.currentTime;
+                const shouldBeActive = currentTime > (STEM_TIMES.get(stem) || 0);
+                if (shouldBeActive && audio.volume != 1) {
+                    audio.volume = 1;
+                } else if (audio.volume === 1 && !shouldBeActive) {
+                    audio.volume = 0
                 }
             })
         })
-        props.audioTracks[0].audio.addEventListener("timeupdate", () => {
-            setTime(props.audioTracks[0].audio.currentTime)
-        })
-    }, [props.audioTracks]);
-    return <div>
-        <div className={"stem-list"}>
-            {stems.map((stem) => <div key={stem} style={{opacity:activeStems.includes(stem)?1:0.5}}>
-                {stem}
-            </div>)}
-        </div>
-        <div className={"progress-bar-container"}>
-            <div className={"progress-bar"} style={{width: `${progress}%`}}>
-            </div>
-        </div>
-    </div>
-}
-
-export function MultiTunePlayer(props: Props) {
-
-    const [audioTracks, setAudioTracks] = useState<Array<StemAudio>>([]);
-    const [tracksLoaded, setTracksLoaded] = useState<StemLoading>(STEMS.map((stem) => [stem, false]));
-    const [isPlaying,setIsPlaying] = useState(false);
-    const {track} = props;
-    useEffect(() => {
-
-        const stems = TrackService.getTrackStemUrls(track)
-        setAudioTracks([])
-        Promise.all(stems.map(async ([stem, url]) => await TrackService.getStemBlob(url).then((blob) => {
-            const audio = new Audio();
-            audio.src = blob
-            audio.volume = 0
-            setTracksLoaded((loaded) => loaded.map(([loadedStem, state]) => [loadedStem, loadedStem == stem ? true : state]))
-            const stemAudios = {stem: stem, audio: audio};
-            setAudioTracks((tracks) => [...tracks.filter((s) => s.stem != stem), stemAudios])
-            return stemAudios
-        })))
-            .then((stemAudios) => {
-                stemAudios.forEach(
-                    (stemAudio) => {
-                        stemAudio.audio.addEventListener("timeupdate", () => {
-                            const currentTime = stemAudio.audio.currentTime;
-
-                            const shouldBeActive = currentTime > (STEM_TIMES.get(stemAudio.stem) || 0);
-                            if (shouldBeActive && stemAudio.audio.volume != 1) {
-                                stemAudio.audio.volume = 1;
-                            } else if (stemAudio.audio.volume === 1 && !shouldBeActive) {
-                                stemAudio.audio.volume = 0
-                            }
-
-                        })
-                    }
-                )
-            });
 
 
-    }, [track.track_id])
-    if (!tracksLoaded || !audioTracks) {
+        setStemAudios(stemAudios);
+        return () => {
+            stemAudios.forEach((t) => {
+                t.audio.pause();
+                t.audio.remove()
+            })
+        }
+    }, [stems]);
+
+
+    if (!stemAudios) {
         return <div>Loading</div>
     }
-    if (tracksLoaded && tracksLoaded.find(v => !v[1])) {
-        return <div>
-            Loaded {tracksLoaded.filter(v => v[1])}/{tracksLoaded.length}
-        </div>
-    }
 
-    const play = async () => {
-        setIsPlaying(!isPlaying)
-        for (const {audio} of audioTracks) {
-            if (audio.paused) {
-                await audio.play();
-            } else {
-                audio.pause();
-            }
-        }
-    }
     return (
-        <div onClick={play} style={{position:"relative"}}>
-            <ProgressBar audioTracks={audioTracks}/>
-            {!isPlaying && <div  className={"play-button-overlay"} >
-                Play
-            </div>}
+        <div className={"player"}>
+            {stemAudios.length != 0 && <ProgressBar audioTracks={stemAudios}/>}
         </div>
     );
-};
+}
+;
