@@ -27,7 +27,7 @@ export class GameService {
 
   constructor() {
     // Get API URL from environment variable, fallback to localhost if not set
-    this.apiUrl = import.meta.env.API_URL || 'http://localhost:3333/api';
+    this.apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3333/api';
   }
 
   /**

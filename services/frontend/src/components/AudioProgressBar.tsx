@@ -11,9 +11,9 @@ const STEM_VISUALS = new Map<StemType, ReactElement>(
         [StemType.OTHER, <div className={"stem-visual"}>🎶</div>]
     ]
 )
-export function ProgressBar(props: { audioTracks: Array<StemAudio>,stemOrder:Array<StemType>}) {
+export function AudioProgressBar(props: { audioTracks: Array<StemAudio>,stemOrder:Array<StemType>}) {
     const [time, setTime] = useState(0);
-    const activeStems = props.audioTracks.filter(({audio})=>audio.volume!=0).map(({stem})=>stem)
+    const activeStems = props.audioTracks.filter(({audio})=>!audio.muted).map(({stem})=>stem)
     const progress = (time / 30) * 100
 
     const stems = props.stemOrder

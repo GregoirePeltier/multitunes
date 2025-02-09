@@ -12,6 +12,7 @@
     background-color: white;
 }
 .progress-bar-container {
+    max-height: 1em;
     width: 100%;
     display: flex;
     background-color: #DCDCDC;

@@ -2,7 +2,7 @@
 
 import {Stem, StemType} from "../model/Track.ts";
 import {ReactElement, useEffect, useState} from "react";
-import {ProgressBar} from "./ProgressBar.tsx";
+import {AudioProgressBar} from "./AudioProgressBar.tsx";
 
 type Props = {
     stems: Array<Stem>;
@@ -51,7 +51,7 @@ export function MultiTunePlayer(props: Props) {
         const stemAudios = stems.map((stem) => {
             const audio = new Audio();
             audio.src = stem.stemBlobUrl
-            audio.volume = 0;
+            audio.muted = true;
             audio.loop = false;
             return {
                 stem: stem.stemType,
@@ -65,11 +65,11 @@ export function MultiTunePlayer(props: Props) {
             stemAudios.forEach(({stem, audio}) => {
                 const currentTime = audio.currentTime;
                 const shouldBeActive = currentTime > (STEM_TIMES.get(stem) || 0);
-                if (shouldBeActive && audio.volume != 1) {
-                    audio.volume = 1;
-                    props.onStemActive(stemAudios.filter(({audio })=>audio.volume!=0).map(({stem})=>stem))
-                } else if (audio.volume === 1 && !shouldBeActive) {
-                    audio.volume = 0
+                if (shouldBeActive && audio.muted) {
+                    audio.muted = false;
+                    props.onStemActive(stemAudios.filter(({audio })=>!audio.muted).map(({stem})=>stem))
+                } else if (!audio.muted && !shouldBeActive) {
+                    audio.muted = true;
                 }
             })
 
@@ -87,13 +87,13 @@ export function MultiTunePlayer(props: Props) {
 
 
     if (!stemAudios) {
-        return <div>Loading</div>
+        return <div>Loading Stems</div>
     }
 
     const stemOrder = stemAudios.map(({stem})=>stem).sort((a, b)=>(STEM_TIMES.get(a)||0)-(STEM_TIMES.get(b)||0));
     return (
         <div className={"player"}>
-            {stemAudios.length != 0 && <ProgressBar audioTracks={stemAudios} stemOrder={stemOrder}/>}
+            {stemAudios.length != 0 && <AudioProgressBar audioTracks={stemAudios} stemOrder={stemOrder}/>}
         </div>
     );
 }
