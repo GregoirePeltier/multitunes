@@ -4,49 +4,7 @@ services:
   core-api:
     build: ./services/core-api
     ports: ["3000:3000"]
-    environment:
-      - DATABASE_URL=postgresql://user:pass@postgres:5432/musicquiz
-      - REDIS_URL=redis://redis:6379
 
-  game-server:
-    build: ./services/game-server
-    ports: ["4000:4000"]
-    environment:
-      - REDIS_URL=redis://redis:6379
-
-  audio-processor:
-    build: ./services/audio-processor
-    ports: ["5000:5000"]
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - S3_BUCKET=processed-tracks
-
-  media-streamer:
-    build: ./services/media-streamer
-    ports: ["6000:6000"]
-    environment:
-      - S3_BUCKET=processed-tracks
-      - REDIS_URL=redis://redis:6379
-
-  frontend:
-    build: ./services/frontend
-    ports: ["8080:80"]
-
-  postgres:
-    image: postgres:13
-    ports: ["5432:5432"]
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=musicquiz
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:6
-    ports: ["6379:6379"]
-    volumes:
-      - redis_data:/data
 
 volumes:
   postgres_data:

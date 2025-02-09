@@ -20,7 +20,6 @@ export class GameController {
         const playlist = await this.playlistService.generatePlaylist({trackCount: 5});
         let availables = Array.from(await this.playlistService.getAvailableTrackIds());
         // Store game state
-        console.log("Creating Questions")
         const questions: Question[] = await Promise.all(playlist.map(async (t) => {
             let other = [t.id]
 

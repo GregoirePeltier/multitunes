@@ -48,7 +48,11 @@ export class PlaylistService {
         let radios = (await axios.get("https://api.deezer.com/radio")).data.data;
         radios = radios.filter((r: any) => r.title.toLowerCase().includes("rock") || r.title.toLowerCase().includes("pop"));
         let radio = radios[Math.floor(Math.random() * Math.min(radios.length, 10))];
-        let tracks = (await axios.get(radio.tracklist)).data.data;
+        let tracks = undefined;
+        while(!tracks){
+            tracks = (await axios.get(radio.tracklist)).data.data;
+        }
+        tracks = tracks.filter((t:any)=>t.artist!=undefined)
         tracks = tracks.map((t: any) => ({
             id: t.id,
             title: t.title,
@@ -84,8 +88,8 @@ export class PlaylistService {
             id: t.id,
             title: t.title,
             preview: t.preview,
-            artist: t.artist.name,
-            cover: t.album.cover_big,
+            artist: t.artist?.name,
+            cover: t.album?.cover_big,
         }
     }
 }

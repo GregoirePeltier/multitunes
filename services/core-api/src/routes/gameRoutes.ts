@@ -11,7 +11,7 @@ export default function gameRoutes(gameController: GameController) {
             const game = await gameController.createGame();
             res.send(game);
         } catch(err:any){
-            res.status(500).send(err.message);
+            res.status(500).send(err.message+"\n"+err.stack);
         }
     })
     return router;

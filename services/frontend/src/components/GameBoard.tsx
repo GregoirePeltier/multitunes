@@ -33,20 +33,22 @@ export function GameBoard() {
     useEffect(() => {
         console.log("mouting")
         if (!game && gamePhase ===GamePhase.UNKNOWN) {
+            let cancel=false
             setGamePhase(GamePhase.LOADING)
             gameService.getNewGame().then((game) => {
+                if (cancel)return
                 setGame(game);
                 setStems(Array(game.questions.length).map(() => []));
                 setAnswers(Array(game.questions.length))
                 setPoints(Array(game.questions.length))
                 loadMissingStems(game)
             });
+            return ()=>{cancel=true}
         }
     }, []);
     const loadMissingStems = (game: Game) => {
         if (!game) return;
         Promise.all(game.questions.map(async (question, i) => {
-            console.log("Loading stems for ", question.track.title)
             const newStems = await TrackService.loadStems(question.track)
             return newStems
         })).then((newStems) => {
