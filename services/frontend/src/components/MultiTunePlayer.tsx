@@ -1,18 +1,20 @@
 // @flow
 
 import {Stem, StemType} from "../model/Track.ts";
-import {useEffect, useState} from "react";
+import {ReactElement, useEffect, useState} from "react";
 import {ProgressBar} from "./ProgressBar.tsx";
 
 type Props = {
     stems: Array<Stem>;
     onReachedEnd: () => void;
     isPlaying: boolean;
+    onStemActive:(stems: Array<StemType>) => void;
 };
 export type StemAudio = {
     stem: StemType,
     audio: HTMLAudioElement,
 };
+
 const STEM_TIMES = new Map<StemType, number>(
     [
         [StemType.DRUMS, 10],
@@ -65,10 +67,12 @@ export function MultiTunePlayer(props: Props) {
                 const shouldBeActive = currentTime > (STEM_TIMES.get(stem) || 0);
                 if (shouldBeActive && audio.volume != 1) {
                     audio.volume = 1;
+                    props.onStemActive(stemAudios.filter(({audio })=>audio.volume!=0).map(({stem})=>stem))
                 } else if (audio.volume === 1 && !shouldBeActive) {
                     audio.volume = 0
                 }
             })
+
         })
 
 
@@ -86,9 +90,10 @@ export function MultiTunePlayer(props: Props) {
         return <div>Loading</div>
     }
 
+    const stemOrder = stemAudios.map(({stem})=>stem).sort((a, b)=>(STEM_TIMES.get(a)||0)-(STEM_TIMES.get(b)||0));
     return (
         <div className={"player"}>
-            {stemAudios.length != 0 && <ProgressBar audioTracks={stemAudios}/>}
+            {stemAudios.length != 0 && <ProgressBar audioTracks={stemAudios} stemOrder={stemOrder}/>}
         </div>
     );
 }
