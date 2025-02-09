@@ -55,7 +55,7 @@ describe('Playlist Service', () => {
             playlistService.getAvailableTrackIds = jest.fn() as any
             (playlistService.getAvailableTrackIds as jest.Mock).mockImplementation(()=>Promise.resolve(ids));
 
-            const playlist = await playlistService.generatePlaylist({trackCount: 5});
+            const playlist = await playlistService.generatePlaylist({});
 
             expect(playlist).toHaveLength(5);
             expect(playlist[0]).toEqual({...mockTrack, album: "album123", artist: "artist123"});
