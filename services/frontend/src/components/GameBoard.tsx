@@ -2,7 +2,7 @@
 import {MultiTunePlayer} from "./MultiTunePlayer.tsx";
 import {useEffect, useState} from "react";
 import {Game, GameService} from "../services/GameService.ts";
-import {Stem, StemType} from "../model/Track.ts";
+import {Stem, StemType, Track} from "../model/Track.ts";
 import {TrackService} from "../services/track_service.ts";
 import {AnswerBoard} from "./AnswerBoard.tsx";
 import {QuestionResult} from "./QuestionResult.tsx";
@@ -44,36 +44,43 @@ export function GameBoard() {
                 setStems(Array(game.questions.length).map(() => []));
                 setAnswers(Array(game.questions.length))
                 setPoints(Array(game.questions.length))
-                loadMissingStems(game)
+                loadStems(game)
             });
             return () => {
                 cancel = true
             }
         }
     }, []);
-    const loadMissingStems = (game: Game) => {
-        if (!game) return;
-
-        Promise.all(game.questions.map(async (question, i) => {
-            const newStems = await TrackService.loadStems(question.track, (stemLoadings) => {
-
-                setLoadingState((oldState) => {
-                        if (!oldState) return null;
-                        const loadings = oldState.stemLoading
-                        return {
-                            ...oldState,
-                            stemLoading:[
-                                ...loadings.slice(0,i),stemLoadings,...loadings.slice(i+1)
-                            ]
-                        }
-                    }
-                )
+    const loadNextStems = async (tracks: Array<Track>, iterationIndex: number) => {
+        if (tracks.length === 0) return;
+        const track = tracks[0];
+        const newStems = await TrackService.loadStems(track, (stemLoadings) => {
+            setLoadingState((oldState) => {
+                if (!oldState) return null;
+                const loadings = oldState.stemLoading
+                return {
+                    ...oldState,
+                    stemLoading: [
+                        ...loadings.slice(0, iterationIndex), stemLoadings, ...loadings.slice(iterationIndex + 1)
+                    ]
+                }
             })
-            return newStems
-        })).then((newStems) => {
-            setStems(newStems);
-            setGamePhase(GamePhase.READY)
         })
+        setStems((oldStems) =>
+            [...oldStems.slice(0, iterationIndex), newStems, ...oldStems.slice(iterationIndex + 1)])
+        setGamePhase((phase) => {
+            if (phase === GamePhase.LOADING || phase === GamePhase.UNKNOWN) {
+                setPlaying(false)
+                return GamePhase.READY
+            }
+            return phase
+        })
+        await loadNextStems(tracks.slice(1), iterationIndex + 1)
+    }
+    const loadStems = (game: Game) => {
+        if (!game) return;
+        console.log("Start Loadgin")
+        loadNextStems(game.questions.map(q => q.track), 0)
     }
     const playbackEnded = () => {
         return
@@ -91,8 +98,15 @@ export function GameBoard() {
         if (currentTrack === game.questions.length - 1) {
             setGamePhase(GamePhase.DONE)
         } else {
+            if (!loadingState || loadingState.stemLoading[currentTrack + 1].some((loading) => !loading.loaded)
+                || !stems[currentTrack + 1] || stems[currentTrack + 1].length === 0
+            ) {
+                setGamePhase(GamePhase.LOADING)
+            } else {
+                setGamePhase(GamePhase.PLAYING);
+            }
             setCurrentTrack(currentTrack + 1);
-            setGamePhase(GamePhase.PLAYING);
+
         }
     }
     const answer = (id: number) => {
@@ -108,8 +122,8 @@ export function GameBoard() {
         window.location.reload()
     }
 
-    if (!game || gamePhase === GamePhase.LOADING || gamePhase === GamePhase.UNKNOWN ) {
-        return <div className={"play-area"}>
+    if (!game || gamePhase === GamePhase.LOADING || gamePhase === GamePhase.UNKNOWN) {
+        return <div className={"loading-area"}>
             <LoadingScreen loadingState={loadingState}/>
         </div>
     }

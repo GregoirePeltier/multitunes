@@ -52,7 +52,7 @@ export class TrackService {
     static async loadStems(track: Track, onUpdate: (stems: Array<StemLoadingState>) => void): Promise<Stem[]> {
         const urls = this.getTrackStemUrls(track);
         const progresses = new Array(urls.length).fill(0);
-        return Promise.all(urls.map(async ([type, url], url_index) => {
+        const values = await Promise.all(urls.map(async ([type, url], url_index) => {
 
             const blob = await this.getStemBlob(url, (progress) => {
                 progresses[url_index] = progress
@@ -62,11 +62,16 @@ export class TrackService {
                     })
                 )
             })
+
             return {
                 trackId: track.id,
                 stemType: type,
                 stemBlobUrl: blob,
             }
         }))
+        onUpdate(progresses.map((_,index)=>{
+            return {stem: urls[index][0], loaded: true, progress: 100}
+        }))
+        return values
     }
 }

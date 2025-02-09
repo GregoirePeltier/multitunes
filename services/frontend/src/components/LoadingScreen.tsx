@@ -16,14 +16,15 @@ export function LoadingScreen(props: { loadingState: LoadingState | null }) {
             <Link to={"/"} className={"button"}> Try Again</Link>
         </div>
     }
-    return <div className={"card primary-bg"}>
+    return <div className={"card primary-bg m-auto"}>
         <h1 className={"card-title"}>
             Loading Your Game
         </h1>
         {loadingState.gameLoaded && loadingState.stemLoading.map((loading, index) => {
+            let loadingValue = loading?mean(loading.map((l) => l.progress)):0;
             return <div style={{display:"flex",minWidth:"100%",alignItems:"center",justifyContent:"center"}}>
                 <div style={{textWrap:"nowrap",margin:"0.5em"}}>Track {index+1}</div>
-                {loading && <ProgressBar value={mean(loading.map((l) => l.progress))} total={100}/>}
+                {<ProgressBar value={loadingValue} total={100}/>}
 
             </div>
         })}

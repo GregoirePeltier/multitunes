@@ -1,3 +1,8 @@
+*{
+      font-family: "B612 Mono", serif;
+  font-weight: 400;
+  font-style: normal;
+}
 .stem-list {
     display: flex;
     flex-direction: row;
@@ -62,6 +67,12 @@
     display: grid;
     grid-template-rows: 1fr 9fr;
     min-height: 100%;
+}
+.loading-area{
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .game-board .play-area{
     min-height: 100%;
