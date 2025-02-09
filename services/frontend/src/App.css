@@ -3,7 +3,14 @@
     flex-direction: row;
     justify-content: space-around;
 }
-
+.button{
+    font-size: 1.5em;
+    margin: 0.5em;
+    padding: 0.5em;
+    box-shadow: #02223C 1px 1px 1px;
+    border-radius: 0.5em;
+    background-color: white;
+}
 .progress-bar-container {
     width: 100%;
     display: flex;
@@ -85,14 +92,25 @@
     border-radius: 0.5em;
     margin: 0.5em;
 }
+.card-title{
+    font-size: 1.5em;
+    font-weight: bold;
+}
+.positive{
+    color: #00ae20;
+    font-weight: bold;
+}
 .m-auto{
     margin: auto;
+}
+.primary-bg{
+    background-color: #02223C;
+    color:white;
 }
 .track-card .track-cover{
     width: 90%;
     border-radius: 0.5em;
     margin: 0.5em 0.2em 0.2em;
-
 }
 .track-card .track-title{
     font-size: 2em;
@@ -102,15 +120,32 @@
     font-size: 1em;
     font-weight: 200;
 }
-
-.button{
-    font-size: 1.5em;
-    margin: 0.5em;
-    padding: 0.5em;
-    box-shadow: #02223C 1px 1px 1px;
-    border-radius: 0.5em;
-    background-color: white;
+.track-chip.positive{
+    background-color: #CBDFCE;
 }
+.track-chip.negative{
+    background-color: #CAB1B1;
+}
+.track-chip{
+    color: #02223C;
+    display: flex;
+    background-color: white;
+    border-radius: 0.5em;
+    margin: 0.5em;
+}
+.track-chip .track-cover{
+    min-width: auto;
+    max-height: 6em;
+    margin: 0.5em;
+}
+.track-chip .track-info{
+    margin: 0.5em;
+}
+.track-chip .track-title{
+    font-size: 1em;
+    font-weight: 700;
+}
+
 .answer-board .answer-button{
     font-size: 1.5em;
     margin: 0.5em;

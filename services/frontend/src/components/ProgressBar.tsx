@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
 import {StemAudio} from "./MultiTunePlayer.tsx";
-import {StemType} from "../model/Track.ts";
 
 export function ProgressBar(props: { audioTracks: Array<StemAudio> }) {
     const [time, setTime] = useState(0);
@@ -17,7 +16,7 @@ export function ProgressBar(props: { audioTracks: Array<StemAudio> }) {
             },100)
             return ()=>clearInterval(interval);
         }
-        
+
     }, [props.audioTracks,firstTrack]);
     return <>
         <div className={"stem-list"}>

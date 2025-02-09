@@ -1,6 +1,6 @@
 // @flow
 
-import {Stem, StemType, Track} from "../model/Track.ts";
+import {Stem, StemType} from "../model/Track.ts";
 import {useEffect, useState} from "react";
 import {ProgressBar} from "./ProgressBar.tsx";
 

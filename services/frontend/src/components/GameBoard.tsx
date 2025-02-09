@@ -2,9 +2,12 @@
 import {MultiTunePlayer} from "./MultiTunePlayer.tsx";
 import {useEffect, useState} from "react";
 import {Game, GameService} from "../services/GameService.ts";
-import {Stem, Track} from "../model/Track.ts";
+import {Stem} from "../model/Track.ts";
 import {TrackService} from "../services/track_service.ts";
 import {AnswerBoard} from "./AnswerBoard.tsx";
+import {QuestionResult} from "./QuestionResult.tsx";
+import {TrackChipView} from "./TrackChipView.tsx";
+import {useNavigate} from "react-router-dom";
 
 export enum GamePhase {
     LOADING = "Loading",
@@ -14,22 +17,8 @@ export enum GamePhase {
     DONE = "Done",
 }
 
-function QuestionResult(props: { track: Track, answer: number, onNext: () => void }) {
-    const {track, answer, onNext} = props
-    return <div className={"question-result"}>
-        <div className={"track-card card"}>
-            <img className={"track-cover"} src={track.cover} alt=""/>
-            <div className={"track-title"}>{track.title}</div>
-            <div className={"track-artist"}>{track.artist}</div>
-
-        </div>
-        <div>You
-            guessed {answer === track.id ? "right" : "wrong"}</div>
-        <button className={"button"} onClick={onNext}>Next</button>
-    </div>;
-}
-
 export function GameBoard() {
+    const navigate = useNavigate();
     const [game, setGame] = useState<Game | null>();
     const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.LOADING);
     const [currentTrack, setCurrentTrack] = useState(0)
@@ -44,12 +33,10 @@ export function GameBoard() {
                 setStems(Array(game.questions.length).map(() => []));
                 setAnswers(Array(game.questions.length))
                 setGame(game);
-
                 loadMissingStems(game)
             });
         }
     }, []);
-    console.log(stems)
     const loadMissingStems = (game: Game) => {
         if (!game) return;
         Promise.all(game.questions.map(async (question, i) => {
@@ -77,22 +64,42 @@ export function GameBoard() {
         setPlaying(true);
     };
     const next = () => {
-        setCurrentTrack(currentTrack + 1);
-        setGamePhase(GamePhase.PLAYING);
+        if (currentTrack === game.questions.length - 1) {
+            setGamePhase(GamePhase.DONE)
+        } else {
+            setCurrentTrack(currentTrack + 1);
+            setGamePhase(GamePhase.PLAYING);
+        }
     }
     const answer = (id: number) => {
         setAnswers((oldAnswers) => [...oldAnswers.slice(0, currentTrack), id, ...oldAnswers.slice(currentTrack + 1)]);
         setGamePhase(GamePhase.INTERSONG);
     }
-    console.log(answers)
+    const again = ()=>{
+        window.location.reload()
+    }
     if (gamePhase === GamePhase.LOADING) {
         return <div className={"play-area"}>
             Loading
         </div>
     }
     if (gamePhase === GamePhase.DONE) {
-        return <div>
-            Well Played
+        const points = game.questions.map<number>((q,i)=>q.track.id===answers[i]?10:0).reduce((previousValue, currentValue) => previousValue+currentValue)
+        return <div className={"result-view"}>
+            <div className={"card primary-bg"}>
+                <div className={"card-title"}>
+                    Well Done
+                </div>
+                <div className={"point-count positive"}>
+                    You won {points} points
+                </div>
+                <div>
+                    {game.questions.map((q,i)=><TrackChipView track={q.track} positive={answers[i]===q.track.id}/>)}
+                </div>
+            </div>
+            <div style={{display:"flex", justifyContent:"center"}}>
+                <button className={"button primary-bg"} onClick={again}>Play Again ! </button>
+            </div>
         </div>
     }
     return (
@@ -106,11 +113,12 @@ export function GameBoard() {
                 {gamePhase === GamePhase.READY &&
                     <div className={"card m-auto"}>
                         <h1>Ready when you are</h1>
-                        <button className={"button"} onClick={play}>Play</button>
+                        <button className={"button primary-bg"} onClick={play}>Play</button>
                     </div>
                 }
                 {gamePhase === GamePhase.INTERSONG && <QuestionResult track={game.questions[currentTrack].track}
-                                                                      answer={answers[currentTrack]} onNext={next}/>
+                                                                      answer={answers[currentTrack]} onNext={next}
+                                                                      done={currentTrack === game.questions.length}/>
                 }
                 {gamePhase === GamePhase.PLAYING &&
                     <AnswerBoard question={game.questions[currentTrack]} onAnswer={answer}/>}
