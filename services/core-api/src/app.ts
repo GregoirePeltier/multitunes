@@ -9,6 +9,7 @@ import "reflect-metadata"
 import { PlaylistService } from './services/playlistService';
 import {DataSource} from "typeorm";
 import {Answer, Game, Question, Track} from "./models/Game";
+import tracksRoutes from "./routes/tracksRoutes";
 
 dotenv.config();
 export const AppDataSource = new DataSource({
@@ -38,6 +39,7 @@ let origin = process.env.TS_NODE_DEV?"http://localhost:8080":'https://multitunes
 app.use(cors({ origin: origin}));
 app.use(express.json());
 app.use('/api/game', gameRoutes(gameController));
+app.use('/api/tracks',tracksRoutes(AppDataSource.getRepository(Track)))
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy' });
 });

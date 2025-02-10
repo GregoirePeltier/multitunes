@@ -98,7 +98,9 @@
     flex-direction: column;
     justify-content: space-between;
 }
+.maintenance{
 
+}
 .card{
     min-width: 90%;
     display: flex;

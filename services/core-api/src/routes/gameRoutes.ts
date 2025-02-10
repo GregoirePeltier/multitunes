@@ -4,7 +4,6 @@ import { GameGenre } from "../models/Game";
 
 export default function gameRoutes(gameController: GameController) {
     const router = express.Router();
-
     // Get available games
     router.get('/available', async (req, res) => {
         try {
