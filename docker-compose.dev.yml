@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data \
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "55432:5432"

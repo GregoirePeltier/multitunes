@@ -1,8 +1,7 @@
-import {Track} from "../models/track";
-import {Redis} from "ioredis";
 import axios from 'axios';
 import {Storage} from '@google-cloud/storage';
 import {Utils} from "../utils";
+import {Track} from "../models/Game";
 
 /**
  * Responsible for generating track playlists
@@ -94,6 +93,7 @@ export class PlaylistService {
             preview: t.preview,
             artist: t.artist?.name,
             cover: t.album?.cover_big,
+            questions:[]
         }
     }
 }

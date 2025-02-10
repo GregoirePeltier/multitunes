@@ -59,7 +59,7 @@ export function MultiTunePlayer(props: Props) {
             }
         })
         stemAudios[0].audio.addEventListener("timeupdate", () => {
-            if (stemAudios[0].audio.currentTime >= 10) {
+            if (stemAudios[0].audio.currentTime >= 30) {
                 reachedEnd()
             }
             stemAudios.forEach(({stem, audio}) => {

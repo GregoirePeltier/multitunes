@@ -2,10 +2,23 @@ version: '3.8'
 
 services:
   core-api:
+    hostname: multitunes-core-api
     build: ./services/core-api
-    ports: ["3000:3000"]
+    networks: 
+      - multitunes_network
+  db:
+    hostname: multitunes-db
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data \
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_ADMIN_PASSWORD}
 
+    networks: 
+      - multitunes_network
 
-volumes:
-  postgres_data:
-  redis_data:
+networks:
+  multitunes_network:
+    name: multitunes_network

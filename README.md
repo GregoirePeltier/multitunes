@@ -112,11 +112,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 _this is a dev note of things that are still to be done_
 ## Technical
 _misc of technical remiders_
-- The track is not updated when the audio processing is done
+- Update tests after rushed change to a daily test app
 ## Critical
 _This is breaking the app_
 ## Needed
 _This is needed to consider the app done_
-- Have a mechanism to take up the task, if no runner were active when the audio processing task was launch 
+- Have a real daily quizz system
+
 ## Nice to have
 _Things that would be nice to have, but not required_

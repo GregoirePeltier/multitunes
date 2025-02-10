@@ -1,25 +1,117 @@
-import { Track } from "./track";
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    OneToMany,
+    ManyToOne,
+    CreateDateColumn,
+    Index,
+    PrimaryColumn
+} from "typeorm";
 
-export interface Game{
+export enum GameGenre {
+    ALL=0,
+    POP = 132,
+    ROCK = 152,
+    METAL = 464,
+    RAP = 116,
+    RNB = 165,
+    FOLK = 466,
+    COUNTRY = 84,
+    FRENCH = 52,
+    SOUL = 169,
+    BLUES = 153
+}
 
+@Entity()
+@Index(["title", "artist"])
+export class Track {
+    @PrimaryColumn({ type: "bigint"})
+    id: number;
+
+    @Column()
+    title: string;
+
+    @Column()
+    artist: string;
+
+    @Column({ nullable: true })
+    preview: string;
+
+    @Column({nullable: true})
+    cover: string;
+
+    @OneToMany(() => Question, question => question.track)
+    questions: Question[];
 }
-export enum GameStatusValue{
-    ACTIVE="active",
-    ENDED="ended",
-    INITIALIZING="initializing",
+@Entity()
+export class Game {
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Index()
+    @CreateDateColumn()
+    date: Date;
+
+    @Column({
+        type: "enum",
+        enum: GameGenre
+    })
+    genre: GameGenre;
+
+    @OneToMany(() => Question, question => question.game, {
+        eager: true,
+        cascade: true
+    })
+    questions: Question[];
 }
-export interface GameStatus{
-    status:GameStatusValue,
-    players:number
+
+@Entity()
+export class Question {
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @ManyToOne(() => Game, game => game.questions)
+    game: Game;
+
+    @OneToMany(() => Answer, answer => answer.question, {
+        eager: true,
+        cascade: true
+    })
+    answers: Answer[];
+
+    @ManyToOne(() => Track, track => track.questions, {
+        eager: true
+    })
+    track: Track;
 }
-export interface Answer{
-    id:number;
-    title:string;
+
+@Entity()
+export class Answer {
+
+    @PrimaryColumn({type: "bigint"})
+    id: number;
+    @PrimaryColumn()
+    questionId: number;
+
+    @Column()
+    title: string;
+
+    @ManyToOne(() => Question, question => question.answers)
+
+    question: Question;
 }
-export interface Question{
-    track:Track,
-    answers : Array<Answer>,
-}
-export interface Game{
-    questions:Array<Question>,
-}
+
+
+// Repository methods for efficient querying
+export const getGameByDate = (repository: any, date: Date) => {
+    return repository.findOne({
+        where: { date },
+        relations: ["questions", "questions.answers", "questions.track"]
+    });
+};
+
+export const createGame = async (repository: any, game: Partial<Game>) => {
+    const newGame = repository.create(game);
+    return repository.save(newGame);
+};
