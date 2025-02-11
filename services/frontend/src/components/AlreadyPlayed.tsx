@@ -43,7 +43,6 @@ export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre
                         const gameDate = new Date(g.date).toISOString().split('T')[0];
                         return gameDate === today && g.genre?.toString() === genre;
                     });
-                console.log("played",playedGame)
                 if (playedGame) {
                     setPlayedDetails(playedGame);
                 }
@@ -65,7 +64,7 @@ export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre
 
     return (
         <div className="result-view">
-            <div className="card primary-bg">
+            <div className="card primary-bg results-card ">
                 <div className="card-title">
                     You've already played this game!
                 </div>
@@ -77,7 +76,7 @@ export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre
                         <TrackChipView
                             key={q.track.id}
                             track={q.track}
-                            positive={playedDetails?.points?.[i] === q.track.id}
+                            positive={playedDetails?.points?.[i] !=0}
                             points={playedDetails?.score?.[i] || 0}
                         />
                     ))}

@@ -1,220 +1,387 @@
-*{
-      font-family: "B612 Mono", serif;
-  font-weight: 400;
-  font-style: normal;
-}
-.stem-list {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-}
-.genre-list{
-    display: flex;
-    flex-wrap: wrap;
-}
-.button{
-    font-size: 1.5em;
-    margin: 0.5em;
-    padding: 0.5em;
-    box-shadow: #02223C 1px 1px 1px;
-    border-radius: 0.5em;
-    background-color: white;
-}
-.progress-bar-container {
-    max-height: 1em;
-    width: 100%;
-    display: flex;
-    background-color: #DCDCDC;
-    min-height: 1em;
+/* Base styles and CSS variables */
+:root {
+  --primary-color: #02223C;
+  --secondary-color: #EAEAEA;
+  --text-primary: #333333;
+  --text-light: #FFFFFF;
+  --success-color: #00ae20;
+  --border-radius: 0.5rem;
+  --shadow-sm: 0 1px 2px rgba(2, 34, 60, 0.1);
+  --shadow-md: 0 2px 4px rgba(2, 34, 60, 0.2);
+  --transition-default: all 0.3s ease;
 }
 
-.progress-bar {
-    min-height: 100%;
-    background-color: #02223C;
+/* Global styles */
+* {
+  font-family: "B612 Mono", system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+body {
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* Layout components */
 .header {
-    width: 100%;
-    height: 4em;
-    background-color: #02223C;
-    color: white;
-}
-.home-card{
-    border-radius: 0.5em;
-    background-color: #02223C;
-    color: white;
-    padding: 1em;
-}
-.home{
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-.play-button{
-    background-color: #02223C;
-    color: white;
-    font-size: 1.5em ;
-    padding:1em;
-    border-radius: 0.5em;
-    margin: 0.5em;
-}
-.player{
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-.game-board{
-    display: grid;
-    grid-template-rows: 1fr 9fr;
-    min-height: 100%;
-}
-.loading-area{
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.game-board .play-area{
-    min-height: 100%;
-    background-color: #EAEAEA;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.answer-board{
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 4rem;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  z-index: 50;
+  box-shadow: var(--shadow-md);
 }
 
-.question-result{
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.body {
+  position: absolute;
+  top: 0;
+  padding-top: 4rem;
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
 }
-.maintenance{
+.bottom-action{
+  width: 100vw;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.next-button{
+  max-width: 300px;
+  width: 100%;
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  margin: 0.5rem auto;
+  cursor: pointer;
+  transition: var(--transition-default);
+}
+/* Game components */
+.game-board {
+  display: grid;
+  grid-template-rows: 1fr 9fr;
+  background-color: var(--secondary-color);
+  min-height: 100%;
+  height: 100%;
+  justify-content: center;
+}
 
+.play-area {
+  width: 600px;
+  overflow-y: auto;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  background-color: var(--secondary-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
 }
-.card{
-    min-width: 90%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: white;
-    border-radius: 0.5em;
-    margin: 0.5em;
-    padding: 0.5em;
+
+/* Card components */
+.card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  margin: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-default);
+  width: 90%;
+  max-width: 600px;
+  margin: 0.5rem auto;
 }
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.card-content {
+  width: 100%;
+}
+
+/* Chip*/
 .chip{
     border-radius: 0.5em;
     margin: 0.5em auto;
     padding: 0.5em;
     width: fit-content;
 }
-.card-title{
-    font-size: 1.5em;
-    font-weight: bold;
-}
-.positive{
-    color: #00ae20;
-    font-weight: bold;
-}
-.m-auto{
-    margin: auto;
-}
-.primary-bg{
-    background-color: #02223C;
-    color:white;
-}
-.track-card .track-cover{
-    width: 90%;
-    border-radius: 0.5em;
-    margin: 0.5em 0.2em 0.2em;
-}
-.track-card .track-title{
-    font-size: 2em;
-    font-weight: 700;
-}
-.track-card .track-artist{
-    font-size: 1em;
-    font-weight: 200;
-}
-.track-points{
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    margin-right: 0.01em;
-    min-height: 100%;
-    min-width: 4em;
-    font-size: 1em;
-}
-.track-chip.positive{
-    background-color: #CBDFCE;
-}
-.track-chip.negative{
-    background-color: #CAB1B1;
-}
-.track-chip{
-    color: #02223C;
-    display: flex;
-    background-color: white;
-    border-radius: 0.5em;
-    margin: 0.5em;
-}
-.track-chip .track-cover{
-    min-width: auto;
-    max-height: 6em;
-    margin: 0.5em;
-}
-.track-chip .track-info{
-    margin: 0.5em;
-}
-.track-chip .track-title{
-    font-size: 1em;
-    font-weight: 700;
-}
 
-.answer-board .answer-button{
-    font-size: 1.5em;
-    margin: 0.5em;
-    padding: 0.5em;
-    box-shadow: #02223C 1px 1px 1px;
-    border-radius: 0.5em;
-    background-color: white;
-}
-.body{
-    position: absolute;
-    top:0;
-    padding-top:4em;
-    height: 100vh;
-    width: 100vw;
-}
-.header{
-    position: absolute;
-    z-index: 10;
-}
-.header h1 {
-    font-size: 3em;
-}
-
-.play-button-overlay {
-    display: flex;
+/* Button styles */
+.button {
+  display: flex;
     align-content: center;
-    align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.51);
-    color: white;
-    position: absolute;
-    top: 0px;
-    height: 100%;
-    width: 100%;
+    align-items: center;
+  font-size: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem;
+  border-radius: var(--border-radius);
+  background-color: white;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  cursor: pointer;
+  transition: var(--transition-default);
+  text-decoration: none;
+  text-align: center;
 }
-.stem-visual{
-    font-size: 2em;
+
+.button:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+.play-button {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  font-size: 1.5rem;
+  padding: 1rem 2rem;
+  border-radius: var(--border-radius);
+  margin: 0.5rem;
+  cursor: pointer;
+  transition: var(--transition-default);
+}
+
+.play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Home page styles */
+.home {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+.home-card {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.genre-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.player{
+  max-width: 500px;
+    margin: auto;
+    width: 100%;
+    border-radius: 2rem;
+    background: white;
+  padding: 1rem;
+}
+/* Track components */
+.track-chip {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: var(--border-radius);
+  margin: 0.5rem;
+  overflow: hidden;
+  transition: var(--transition-default);
+}
+
+.track-chip.positive {
+  background-color: #CBDFCE;
+}
+
+.track-chip.negative {
+  background-color: #CAB1B1;
+}
+.track-chip .track-cover {
+  width: 6rem;
+  height: 6rem;
+  margin: 0.5rem;
+}
+.track-cover {
+  width: 20rem;
+  height: 20rem;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  margin:  0.5rem auto;
+
+}
+
+.track-info {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.track-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.track-artist {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+/* Game interface elements */
+.stem-list {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 1rem;
+}
+
+.stem-visual {
+  font-size: 2rem;
+  transition: var(--transition-default);
+}
+
+.progress-bar-container {
+  height: 0.5rem;
+  width: 100%;
+  background-color: #DCDCDC;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+/* Utility classes */
+.positive {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.m-auto {
+  margin: auto;
+}
+
+.primary-bg {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+/* Loading and state indicators */
+.loading-area {
+  min-height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Answer board styles */
+.answer-board {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.answer-button {
+  font-size: 1.25rem;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: white;
+  border: 2px solid var(--primary-color);
+  cursor: pointer;
+  transition: var(--transition-default);
+  text-align: center;
+}
+
+.answer-button:hover {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  transform: translateY(-2px);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .result-view{
+    height: 100%;
+    display: grid;
+    grid-template-rows: 9fr 1fr;
+  }
+  .results-card{
+    overflow-y: auto;
+  }
+  .track-list {
+    overflow-y: auto;
+    height: 100%;
+  }
+  .genre-list {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    max-width: 80vw;
+  }
+  .track-chip .track-cover {
+    width: 4rem;
+    height: 4rem;
+    margin: 0.5rem;
+  }
+  .track-card .track-cover {
+    width: 10rem;
+    height: 10rem;
+  }
+
+  .track-title {
+    font-size: 1rem;
+  }
+
+  .button, .play-button {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+  .player{
+    margin: auto;
+    width: 100%;
+    border-radius: unset;
+    background: white;
+    padding: unset;
+  }
+  .game-board{
+    justify-content: unset;
+  }
+  .play-area{
+    max-width: 100vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-card {
+    padding: 1rem;
+  }
+
+  .stem-visual {
+    font-size: 1.5rem;
+  }
 }

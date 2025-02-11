@@ -43,7 +43,7 @@ export function GameBoard() {
     const [stems, setStems] = useState<Array<Array<Stem>>>([]);
     const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
     const [playing, setPlaying] = useState<boolean>(false);
-    const [answers, setAnswers] = useState<Array<number>>([]);
+    const [answers, setAnswers] = useState<Array<number|null>>([]);
     const [points, setPoints] = useState<Array<number>>([]);
     const [activeStems, setActiveStems] = useState<StemType[]>([]);
         const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -89,6 +89,7 @@ export function GameBoard() {
                     }
                     loadedGame.questions.forEach(q => q.answers = Utils.shuffleArray(q.answers));
                     if (cancel) return;
+                    umami.track('game-load', { gameId: gameId, genre: genre });
 
                     setGame(loadedGame);
                     setLoadingState({
@@ -113,15 +114,15 @@ export function GameBoard() {
     // Save game results to localStorage when done
     useEffect(() => {
         if (gamePhase === GamePhase.DONE && game) {
-            const totalPoints = points.reduce((sum, p) => sum + p, 0);
+            const totalPoints = points.map(p=>p||0).reduce((sum, p) => sum + p, 0);
             const gameHistory = JSON.parse(localStorage.getItem('playedGames') || '[]');
 
             const newGame = {
                 gameId: game.id,
                 date: new Date().toISOString(),
                 genre: genre ? parseInt(genre) as GameGenre : undefined,
-                score: totalPoints,
-                points: points,
+                score: totalPoints||0,
+                points: points.map(p => p || 0),
             };
 
             localStorage.setItem('playedGames',
@@ -172,9 +173,13 @@ export function GameBoard() {
 
     const playbackEnded = () => {
         if (!game) return;
+        if(GamePhase.PLAYING === gamePhase && (answers[currentTrack]===undefined) ){
+                answer(null)
+            }
         if (currentTrack === game.questions.length - 1) {
             setGamePhase(GamePhase.DONE);
         } else {
+
             setGamePhase(GamePhase.INTERSONG);
         }
     };
@@ -201,17 +206,16 @@ export function GameBoard() {
             setCurrentTrack(currentTrack + 1);
         }
     };
-
-    const answer = (id: number) => {
+    const answer = (id: number|null) => {
         if (!game) return;
         let points = 0;
         if (id === game.questions[currentTrack].track.id) {
             points = 10 - Math.max(0, (activeStems.length - 1));
         }
         setPoints(oldPoints => [
-            ...oldPoints.slice(0, currentTrack),
+            ...oldPoints.slice(0, currentTrack).map(p => p || 0),
             points,
-            ...oldPoints.slice(currentTrack + 1)
+            ...oldPoints.slice(currentTrack + 1).map(p => p || 0)
         ]);
         setAnswers(oldAnswers => [
             ...oldAnswers.slice(0, currentTrack),
@@ -228,6 +232,7 @@ export function GameBoard() {
         navigate('/');
     };
     const handleShare = (platform: string) => {
+        umami.track('share', { platform });
         // You can add analytics tracking here if needed
         console.log(`Shared on ${platform}`);
     };
@@ -239,11 +244,11 @@ export function GameBoard() {
         );
     }
 
-    if (gamePhase === GamePhase.DONE) {
+    if (gamePhase === GamePhase.DONE ) {
         const total = points.reduce((sum, p) => sum + p, 0);
         return (
             <div className="result-view">
-                <div className="card primary-bg">
+                <div className="card primary-bg scroll-auto results-card">
                     <div className="card-title">Well Done</div>
                     <div className="point-count positive">You won {total} points</div>
                     <div>
@@ -257,9 +262,9 @@ export function GameBoard() {
                         ))}
                     </div>
                 </div>
-                <div className="flex justify-center space-x-4">
+                <div className="flex justify-center">
                     <button
-                        className="button primary-bg flex items-center space-x-2"
+                        className="button primary-bg flex flex-row "
                         onClick={() => setIsShareModalOpen(true)}
                     >
                         <Share2 size={20} />
@@ -296,10 +301,12 @@ export function GameBoard() {
             <div className="play-area">
                 {gamePhase === GamePhase.READY && (
                     <div className="card m-auto">
-                        <h1>Ready when you are</h1>
-                        <button className="button primary-bg" onClick={play}>
+                        <h1 className={"text-center"}>Ready when you are</h1>
+                        <div className={"card-content flex flex-col"}>
+                            <button className="button primary-bg m-0" onClick={play}>
                             Play
                         </button>
+                        </div>
                     </div>
                 )}
                 {gamePhase === GamePhase.INTERSONG && (

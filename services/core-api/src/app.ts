@@ -35,7 +35,7 @@ const gameRespository = AppDataSource.getRepository(Game);
 const app = express();
 const playlistService = new PlaylistService();
 const gameController = new GameController(playlistService,gameRespository);
-let origin = process.env.TS_NODE_DEV?"http://localhost:8080":'https://multitunes.app';
+let origin = process.env.TS_NODE_DEV?"*":'https://multitunes.app';
 app.use(cors({ origin: origin}));
 app.use(express.json());
 app.use('/api/game', gameRoutes(gameController));

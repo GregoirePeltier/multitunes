@@ -27,11 +27,11 @@ const Home = () => (
             <div className="text-xl">6 Instruments</div>
             <div className="text-xl">5 Choices</div>
             <div className="text-xl">1 Song</div>
-            <div>Can you guess the right one before the end?</div>
+            <div>Can you guess the song before the end?</div>
         </div>
 
         <div className="flex flex-col items-center space-y-8">
-            <div className="space-y-4">
+            <div className="space-y-4 flex flex-col items-center">
                 <Link to="/play/daily" className="play-button block text-center">
                     Play Today's Challenge
                 </Link>

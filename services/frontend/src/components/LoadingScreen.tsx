@@ -22,7 +22,7 @@ export function LoadingScreen(props: { loadingState: LoadingState | null }) {
         </h1>
         {loadingState.gameLoaded && loadingState.stemLoading.map((loading, index) => {
             let loadingValue = loading?mean(loading.map((l) => l.progress)):0;
-            return <div style={{display:"flex",minWidth:"100%",alignItems:"center",justifyContent:"center"}}>
+            return <div key={index} style={{display:"flex",minWidth:"100%",alignItems:"center",justifyContent:"center"}}>
                 <div style={{textWrap:"nowrap",margin:"0.5em"}}>Track {index+1}</div>
                 {<ProgressBar value={loadingValue} total={100}/>}
 

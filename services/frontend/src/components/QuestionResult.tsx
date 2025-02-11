@@ -11,6 +11,6 @@ export function QuestionResult(props: { track: Track, points:number, onNext: () 
         </div>
         <div className={"primary-bg chip"} >{points === 0 && <div className={"negative"}>You won no points</div>}
             {points != 0 && <div className={"positive"}>You won {points} points</div>}</div>
-        <button className={"button"} onClick={onNext}>{done ? "Results" : "Next"}</button>
+        <div className={"bottom-action"}> <button className={"button next-button"} onClick={onNext}>{done ? "Results" : "Next"}</button></div>
     </div>;
 }
