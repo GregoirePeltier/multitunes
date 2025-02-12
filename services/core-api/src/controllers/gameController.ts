@@ -1,6 +1,5 @@
-import { Game, GameGenre } from "../models/Game";
-import { PlaylistService } from "../services/playlistService";
-import { Repository } from "typeorm";
+import {Game, GameGenre} from "../models/Game";
+import {Repository} from "typeorm";
 
 export interface AvailableGame {
     id: number;
@@ -9,11 +8,9 @@ export interface AvailableGame {
 }
 
 export class GameController {
-    private playlistService: PlaylistService;
     private gameRepository: Repository<Game>;
 
-    constructor(playlistService: PlaylistService, gameRepository: Repository<Game>) {
-        this.playlistService = playlistService;
+    constructor( gameRepository: Repository<Game>) {
         this.gameRepository = gameRepository;
     }
 

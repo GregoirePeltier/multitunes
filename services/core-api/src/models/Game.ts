@@ -1,13 +1,14 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
     Column,
-    OneToMany,
-    ManyToOne,
     CreateDateColumn,
+    Entity,
     Index,
-    PrimaryColumn
+    ManyToOne,
+    OneToMany,
+    PrimaryColumn,
+    PrimaryGeneratedColumn
 } from "typeorm";
+import {Track} from "./Track";
 
 export enum GameGenre {
     ALL=0,
@@ -23,27 +24,6 @@ export enum GameGenre {
     BLUES = 153
 }
 
-@Entity()
-@Index(["title", "artist"])
-export class Track {
-    @PrimaryColumn({ type: "bigint"})
-    id: number;
-
-    @Column()
-    title: string;
-
-    @Column()
-    artist: string;
-
-    @Column({ nullable: true })
-    preview: string;
-
-    @Column({nullable: true})
-    cover: string;
-
-    @OneToMany(() => Question, question => question.track)
-    questions: Question[];
-}
 @Entity()
 export class Game {
     @PrimaryGeneratedColumn()
@@ -98,7 +78,6 @@ export class Answer {
     title: string;
 
     @ManyToOne(() => Question, question => question.answers)
-
     question: Question;
 }
 
