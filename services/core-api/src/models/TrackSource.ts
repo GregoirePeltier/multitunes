@@ -1,5 +1,5 @@
-import {Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn} from "typeorm";
-import {Track} from "./Track";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "typeorm";
+import { Track } from "./Track";
 
 export enum Source {
     DEEZER = "deezer",
@@ -10,11 +10,17 @@ export const SourceValues = Object.values(Source);
 export class TrackSource {
     @PrimaryGeneratedColumn()
     id: number;
+
     @Column()
     source: Source;
-    @Column()
+
+    @Column({nullable:true})
     url: string;
-    @OneToOne(() => Track, track => track.id)
+
+    @Column({ name: 'source_id' })
+    sourceId: string;
+
+    @OneToOne(() => Track, track => track.trackSource,{onDelete: 'CASCADE'})
     @JoinColumn()
     track: Track;
 }

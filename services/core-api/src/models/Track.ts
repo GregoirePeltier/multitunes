@@ -1,11 +1,10 @@
-import {Column, Entity, Index, OneToMany, OneToOne, PrimaryColumn} from "typeorm";
-import {Question} from "./Game";
-import {TrackSource} from "./TrackSource";
+import {Entity, PrimaryGeneratedColumn, Column, OneToOne, OneToMany} from "typeorm";
+import { TrackSource } from "./TrackSource";
+import { Question } from "./Game";
 
 @Entity()
-@Index(["title", "artist"])
 export class Track {
-    @PrimaryColumn({type: "bigint"})
+    @PrimaryGeneratedColumn({"type": "bigint"})
     id: number;
 
     @Column()
@@ -19,10 +18,8 @@ export class Track {
 
     @Column({nullable: true})
     cover: string;
-
     @OneToMany(() => Question, question => question.track)
     questions: Question[];
-    @OneToOne(() => TrackSource, trackSource => trackSource.track,{nullable: true})
-    trackSource?: TrackSource;
-
+    @OneToOne(() => TrackSource, trackSource => trackSource.track)
+    trackSource: TrackSource;
 }

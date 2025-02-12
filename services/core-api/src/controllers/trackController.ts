@@ -1,5 +1,4 @@
-// controllers/trackController.ts
-import { Repository } from 'typeorm';
+ import { Repository } from 'typeorm';
 import { Track } from "../models/Track";
 import {Source, TrackSource} from "../models/TrackSource";
 
@@ -10,6 +9,7 @@ interface TrackData {
     cover: string;
     source?: Source;
     sourceUrl?: string;
+    sourceId?: string; // Added this field
 }
 
 export class TrackController {
@@ -19,18 +19,26 @@ export class TrackController {
     ) {}
 
     async getAllTracks() {
-        const tracks = await this.tracksRepository.createQueryBuilder("track")
-            .select(["track.id"])
-            .getMany();
+        const tracks = await this.tracksRepository.find({
+            relations: ['trackSource']
+        });
         return tracks;
     }
 
     async createTrack(trackData: TrackData) {
+        if (trackData.source && (!trackData.sourceId || !trackData.sourceUrl)) {
+            throw new Error('Source ID and URL are required when source is provided');
+        }
+
         const track = await this.saveTrackWithSource(trackData);
         return this.getTrackWithSource(track.id);
     }
 
     async updateTrack(trackId: number, trackData: TrackData) {
+        if (trackData.source && (!trackData.sourceId || !trackData.sourceUrl)) {
+            throw new Error('Source ID and URL are required when source is provided');
+        }
+
         const existingTrack = await this.getTrackWithSource(trackId);
         if (!existingTrack) {
             throw new Error('Track not found');
@@ -49,7 +57,7 @@ export class TrackController {
     }
 
     private async saveTrackWithSource(data: TrackData, trackId?: number) {
-        const { title, artist, preview, cover, source, sourceUrl } = data;
+        const { title, artist, preview, cover, source, sourceUrl, sourceId } = data;
 
         // Create or update track
         const track = this.tracksRepository.create({
@@ -62,11 +70,11 @@ export class TrackController {
         await this.tracksRepository.save(track);
 
         // Handle track source
-        if (source && sourceUrl) {
+        if (source && sourceUrl && sourceId) {
             const trackSource = this.trackSourceRepository.create({
-                id: track.id,
-                source,
+                source:source,
                 url: sourceUrl,
+                sourceId,
                 track
             });
             await this.trackSourceRepository.save(trackSource);

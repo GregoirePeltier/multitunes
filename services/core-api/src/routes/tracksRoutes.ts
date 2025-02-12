@@ -14,7 +14,7 @@ export default function tracksRoutes(
     const controller = new TrackController(tracksRepository, trackSourceRepository);
 
     // Get all tracks (public endpoint)
-    router.get("/", async (req, res) => {
+    router.get("/",authenticateToken, async (req, res) => {
         try {
             const tracks = await controller.getAllTracks();
             res.json(tracks);
