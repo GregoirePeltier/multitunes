@@ -4,9 +4,15 @@ import {SourceValues} from "../models/TrackSource";
 export const validateTrackData = (req: Request, res: Response, next: NextFunction) => {
     const { title, artist, preview, cover, source, sourceUrl, sourceId } = req.body;
 
-    if (!title || !artist || !cover) {
+    if (!title || !artist) {
         res.status(400).json({
             error: 'Title, artist, preview, and cover are required'
+        });
+        return
+    }
+    if(cover && typeof cover !== 'string') {
+        res.status(400).json({
+            error: 'Cover must be a string'
         });
         return
     }

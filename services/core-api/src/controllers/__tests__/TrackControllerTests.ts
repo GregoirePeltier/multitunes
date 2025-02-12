@@ -32,14 +32,17 @@ const createMockRepositories = () => {
     const tracksRepository = {
         find: jest.fn(),
         findOne: jest.fn(),
+        findOneOrFail: jest.fn(),
         create: jest.fn(),
-        save: jest.fn(),
+        update: jest.fn(),
+        insert: jest.fn(),
         delete: jest.fn()
     } as unknown as Repository<Track>;
 
     const trackSourceRepository = {
         create: jest.fn(),
-        save: jest.fn()
+        insert: jest.fn(),
+        update: jest.fn(),
     } as unknown as Repository<TrackSource>;
 
     return { tracksRepository, trackSourceRepository };
@@ -89,10 +92,14 @@ describe('TrackController', () => {
     describe('createTrack', () => {
         it('should create a track with source', async () => {
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
-            (tracksRepository.save as jest.Mock).mockResolvedValue(mockTrack);
+            (tracksRepository.insert as jest.Mock).mockResolvedValue(undefined);
             (trackSourceRepository.create as jest.Mock).mockReturnValue(mockTrackSource);
-            (trackSourceRepository.save as jest.Mock).mockResolvedValue(mockTrackSource);
+            (trackSourceRepository.insert as jest.Mock).mockResolvedValue(undefined);
             (tracksRepository.findOne as jest.Mock).mockResolvedValue({
+                ...mockTrack,
+                trackSource: mockTrackSource
+            });
+            (tracksRepository.findOneOrFail as jest.Mock).mockResolvedValue({
                 ...mockTrack,
                 trackSource: mockTrackSource
             });
@@ -114,7 +121,7 @@ describe('TrackController', () => {
             };
 
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
-            (tracksRepository.save as jest.Mock).mockResolvedValue(mockTrack);
+            (tracksRepository.insert as jest.Mock).mockResolvedValue(undefined);
             (tracksRepository.findOne as jest.Mock).mockResolvedValue(mockTrack);
 
             const result = await controller.createTrack(trackDataWithoutSource);
@@ -139,15 +146,15 @@ describe('TrackController', () => {
         it('should update an existing track with source', async () => {
             (tracksRepository.findOne as jest.Mock).mockResolvedValue(mockTrack);
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
-            (tracksRepository.save as jest.Mock).mockResolvedValue(mockTrack);
+            (tracksRepository.update as jest.Mock).mockResolvedValue(undefined);
             (trackSourceRepository.create as jest.Mock).mockReturnValue(mockTrackSource);
-            (trackSourceRepository.save as jest.Mock).mockResolvedValue(mockTrackSource);
+            (trackSourceRepository.update as jest.Mock).mockResolvedValue(undefined);
 
             const result = await controller.updateTrack(1, mockTrackData);
 
             expect(result).toBeDefined();
-            expect(tracksRepository.save).toHaveBeenCalled();
-            expect(trackSourceRepository.save).toHaveBeenCalled();
+            expect(tracksRepository.update).toHaveBeenCalled();
+            expect(trackSourceRepository.update).toHaveBeenCalled();
         });
 
         it('should throw error when track not found', async () => {
@@ -168,12 +175,12 @@ describe('TrackController', () => {
 
             (tracksRepository.findOne as jest.Mock).mockResolvedValue(mockTrack);
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
-            (tracksRepository.save as jest.Mock).mockResolvedValue(mockTrack);
+            (tracksRepository.update as jest.Mock).mockResolvedValue(undefined);
 
             const result = await controller.updateTrack(1, trackDataWithoutSource);
 
             expect(result).toBeDefined();
-            expect(trackSourceRepository.save).not.toHaveBeenCalled();
+            expect(trackSourceRepository.update).not.toHaveBeenCalled();
         });
     });
 

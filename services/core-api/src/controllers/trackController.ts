@@ -1,5 +1,5 @@
- import { Repository } from 'typeorm';
-import { Track } from "../models/Track";
+import {Repository} from 'typeorm';
+import {Track} from "../models/Track";
 import {Source, TrackSource} from "../models/TrackSource";
 
 interface TrackData {
@@ -16,7 +16,8 @@ export class TrackController {
     constructor(
         private tracksRepository: Repository<Track>,
         private trackSourceRepository: Repository<TrackSource>
-    ) {}
+    ) {
+    }
 
     async getAllTracks() {
         const tracks = await this.tracksRepository.find({
@@ -30,7 +31,7 @@ export class TrackController {
             throw new Error('Source ID and URL are required when source is provided');
         }
 
-        const track = await this.saveTrackWithSource(trackData);
+        const track = await this.createTrackWithSource(trackData);
         return this.getTrackWithSource(track.id);
     }
 
@@ -44,7 +45,7 @@ export class TrackController {
             throw new Error('Track not found');
         }
 
-        const updatedTrack = await this.saveTrackWithSource(trackData, trackId);
+        const updatedTrack = await this.updateTrackWithSource(trackData, trackId);
         return this.getTrackWithSource(updatedTrack.id);
     }
 
@@ -56,28 +57,57 @@ export class TrackController {
         return true;
     }
 
-    private async saveTrackWithSource(data: TrackData, trackId?: number) {
-        const { title, artist, preview, cover, source, sourceUrl, sourceId } = data;
+    private async createTrackWithSource(data: TrackData, trackId?: number) {
+        const {title, artist, preview, cover, source, sourceUrl, sourceId} = data;
 
         // Create or update track
         const track = this.tracksRepository.create({
-            ...(trackId && { id: trackId }),
+            ...(trackId && {id: trackId}),
             title,
             artist,
             preview,
-            cover
+            cover,
         });
-        await this.tracksRepository.save(track);
 
-        // Handle track source
+        await this.tracksRepository.insert(track);
+
+        // Save the track and retrieve it after saving
+        await this.tracksRepository.insert(track);
+        const savedTrack = await this.tracksRepository.findOneOrFail({where: {id: track.id}});
         if (source && sourceUrl && sourceId) {
+            // Create and save the track source
             const trackSource = this.trackSourceRepository.create({
-                source:source,
+                track: savedTrack,
+                source,
                 url: sourceUrl,
                 sourceId,
-                track
             });
-            await this.trackSourceRepository.save(trackSource);
+            await this.trackSourceRepository.insert(trackSource);
+        }
+
+
+        return track;
+    }
+
+    private async updateTrackWithSource(data: TrackData, trackId?: number) {
+        const {title, artist, preview, cover, source, sourceUrl, sourceId} = data;
+
+        // Create or update track
+        const track = this.tracksRepository.create({
+            ...(trackId && {id: trackId}),
+            title,
+            artist,
+            preview,
+            cover,
+        });
+
+        await this.tracksRepository.update(trackId!, track);
+        if (source && sourceUrl && sourceId) {
+            await this.trackSourceRepository.update({track: track}, {
+                source,
+                url: sourceUrl,
+                sourceId,
+            })
         }
 
         return track;
@@ -85,7 +115,7 @@ export class TrackController {
 
     private async getTrackWithSource(trackId: number) {
         return this.tracksRepository.findOne({
-            where: { id: trackId },
+            where: {id: trackId},
             relations: ['trackSource']
         });
     }
