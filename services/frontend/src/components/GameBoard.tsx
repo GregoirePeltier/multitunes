@@ -220,7 +220,11 @@ export function GameBoard() {
         if (!game) return;
         let points = 0;
         if (id === game.questions[currentTrack].track.id) {
-            points = 10 - Math.max(0, (activeStems.length - 1));
+            points= 8;
+            if(activeStems.includes(StemType.BASS)) points = 7;
+            if(activeStems.includes(StemType.DRUMS))points=6;
+            if(activeStems.includes(StemType.GUITAR))points=5;
+            if(activeStems.includes(StemType.VOCALS))points=4;
         }
         setPoints(oldPoints => [
             ...oldPoints.slice(0, currentTrack).map(p => p || 0),
@@ -306,6 +310,7 @@ export function GameBoard() {
                     onReachedEnd={()=>playbackEnded()}
                     isPlaying={playing}
                     stems={stems[currentTrack]}
+                    points={points[currentTrack]}
                 />
             )}
             <div className="play-area">

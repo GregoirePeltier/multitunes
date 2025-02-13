@@ -9,6 +9,7 @@ type Props = {
     onReachedEnd: () => void;
     isPlaying: boolean;
     onStemActive:(stems: Array<StemType>) => void;
+    points?: number;
 };
 export type StemAudio = {
     stem: StemType,
@@ -25,9 +26,16 @@ const STEM_TIMES = new Map<StemType, number>(
         [StemType.VOCALS, 20]
     ]
 )
+const POINT_SEGMENTS = [
+    {duration:5,points:8},
+    {duration:5,points:7},
+    {duration:5,points:6},
+    {duration:5,points:5},
+    {duration:10,points:4},
+]
 
 export function MultiTunePlayer(props: Props) {
-    const { stems, isPlaying,onReachedEnd,onStemActive} = props;
+    const { stems, isPlaying,onReachedEnd,points} = props;
     const [stemAudios, setStemAudios] = useState<Array<StemAudio>>([]);
 
     const reachedEnd = useCallback(() => {
@@ -103,7 +111,7 @@ export function MultiTunePlayer(props: Props) {
     const stemOrder = stemAudios.map(({stem})=>stem).sort((a, b)=>(STEM_TIMES.get(a)||0)-(STEM_TIMES.get(b)||0));
     return (
         <div className={"player"}>
-            {stemAudios.length != 0 && <AudioProgressBar audioTracks={stemAudios} stemOrder={stemOrder}/>}
+            {stemAudios.length != 0 && <AudioProgressBar points={points} audioTracks={stemAudios} stemOrder={stemOrder} pointSegments={POINT_SEGMENTS}/>}
         </div>
     );
 }
