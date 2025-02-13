@@ -4,6 +4,14 @@ export interface Track{
     artist:string;
     album:string;
     cover:string;
+    source?:SoureLink;
+}
+export interface SoureLink{
+    source:TrackSource;
+    url:string;
+}
+export enum TrackSource{
+    DEEZER = "deezer",
 }
 export interface Stem{
     trackId:number;

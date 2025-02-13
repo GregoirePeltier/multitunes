@@ -1,18 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {Game, GameGenre, GameService, getGameType} from '../services/GameService';
-import { TrackChipView } from './TrackChipView';
-import { LoadingScreen } from './LoadingScreen';
+import React, {useEffect, useState} from 'react';
+import {Link} from 'react-router-dom';
+import {Game, GameService, getGameType} from '../services/GameService';
+import {TrackChipView} from './TrackChipView';
+import {LoadingScreen} from './LoadingScreen';
 import {ShareModal} from "./ShareModal.tsx";
 import {Share2} from "lucide-react";
-
-interface PlayedGameDetails {
-    gameId: string | number;
-    date: string;
-    points: number[];
-    score: number[];
-    genre: GameGenre;
-}
+import {PlayedGameDetails} from "../model/PlayedGameDetails.ts";
 
 export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre?: string, score: number }) => {
     const [game, setGame] = useState<Game | null>(null);
@@ -77,7 +70,7 @@ export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre
                             key={q.track.id}
                             track={q.track}
                             positive={playedDetails?.points?.[i] !=0}
-                            points={playedDetails?.score?.[i] || 0}
+                            points={playedDetails?.points?.[i] || 0}
                         />
                     ))}
                 </div>

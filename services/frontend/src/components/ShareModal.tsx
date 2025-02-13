@@ -41,7 +41,8 @@ export function ShareModal({
         }).join('');
     };
 
-    const shareText = `🎵 MultiTunes ${gameType} Challenge\n${score}/${total} points!\n${generateEmojiPattern(questionResults)}\nPlay now at https://multitunes.app/play/${gameId}`;
+    const multituneLink = `https://multitunes.app/play/${gameId}`;
+    const shareText = `🎵 MultiTunes ${gameType} Challenge\n${score}/${total} points!\n${generateEmojiPattern(questionResults)}\nPlay now at ${multituneLink}`;
 
     const copyToClipboard = async () => {
         try {
@@ -67,7 +68,6 @@ export function ShareModal({
     const sharePayload = {
         title: 'MultiTunes',
         text: shareText,
-        url: 'https://multitunes.app'
     }
 
     const genericShare = async () => {

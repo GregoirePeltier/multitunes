@@ -1,7 +1,7 @@
 // @flow
 
 import {Stem, StemType} from "../model/Track.ts";
-import {ReactElement, useEffect, useState} from "react";
+import {ReactElement, useCallback, useEffect, useState} from "react";
 import {AudioProgressBar} from "./AudioProgressBar.tsx";
 
 type Props = {
@@ -14,28 +14,28 @@ export type StemAudio = {
     stem: StemType,
     audio: HTMLAudioElement,
 };
-
+const TIME_LIMIT=30;
 const STEM_TIMES = new Map<StemType, number>(
     [
+        [StemType.PIANO, 0],
+        [StemType.OTHER, 0],
+        [StemType.BASS, 5],
         [StemType.DRUMS, 10],
         [StemType.GUITAR, 15],
-        [StemType.BASS, 5],
-        [StemType.VOCALS, 20],
-        [StemType.PIANO, 0],
-        [StemType.OTHER, 0]
+        [StemType.VOCALS, 20]
     ]
 )
 
 export function MultiTunePlayer(props: Props) {
-    const { stems, isPlaying} = props;
+    const { stems, isPlaying,onReachedEnd,onStemActive} = props;
     const [stemAudios, setStemAudios] = useState<Array<StemAudio>>([]);
 
-    const reachedEnd = () => {
+    const reachedEnd = useCallback(() => {
         stemAudios.forEach((t) => {
             t.audio.pause()
         })
-        props.onReachedEnd();
-    }
+        onReachedEnd()
+    },[stemAudios,onReachedEnd])
     useEffect(() => {
         stemAudios.forEach(({audio}) => {
             if (audio.paused && isPlaying) {
@@ -59,9 +59,6 @@ export function MultiTunePlayer(props: Props) {
             }
         })
         stemAudios[0].audio.addEventListener("timeupdate", () => {
-            if (stemAudios[0].audio.currentTime >= 30) {
-                reachedEnd()
-            }
             stemAudios.forEach(({stem, audio}) => {
                 const currentTime = audio.currentTime;
                 const shouldBeActive = currentTime > (STEM_TIMES.get(stem) || 0);
@@ -75,7 +72,6 @@ export function MultiTunePlayer(props: Props) {
 
         })
 
-
         setStemAudios(stemAudios);
         return () => {
             stemAudios.forEach((t) => {
@@ -84,6 +80,21 @@ export function MultiTunePlayer(props: Props) {
             })
         }
     }, [stems]);
+    useEffect(() => {
+        if (!stemAudios || stemAudios.length == 0) {
+            return
+        }
+
+        const endReachedListener = ()=>{
+            if (stemAudios[0].audio.currentTime >= TIME_LIMIT) {
+                reachedEnd()
+            }
+        };
+        stemAudios[0].audio.addEventListener("timeupdate",endReachedListener)
+        return ()=>{
+            stemAudios[0].audio.removeEventListener("timeupdate",endReachedListener)
+        }
+    }, [stemAudios,reachedEnd]);
 
     if (!stemAudios) {
         return <div>Loading Stems</div>

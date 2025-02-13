@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useParams, useNavigate} from "react-router-dom";
 import {Game, GameService, GameGenre, getGameType} from "../services/GameService";
-import { MultiTunePlayer } from "./MultiTunePlayer";
-import { AnswerBoard } from "./AnswerBoard";
-import { QuestionResult } from "./QuestionResult";
-import { LoadingScreen } from "./LoadingScreen";
-import { ShareModal } from "./ShareModal";
-import { AlreadyPlayed } from "./AlreadyPlayed";
+import {MultiTunePlayer} from "./MultiTunePlayer";
+import {AnswerBoard} from "./AnswerBoard";
+import {QuestionResult} from "./QuestionResult";
+import {LoadingScreen} from "./LoadingScreen";
+import {ShareModal} from "./ShareModal";
+import {AlreadyPlayed} from "./AlreadyPlayed";
 
-import { Stem, StemType, Track } from "../model/Track";
-import { TrackService } from "../services/track_service";
-import { LoadingState } from "./LoadingState";
-import { Share2 } from 'lucide-react';
-import { Utils } from "../utils";
+import {Stem, StemType, Track} from "../model/Track";
+import {TrackService} from "../services/track_service";
+import {LoadingState} from "./LoadingState";
+import {Share2} from 'lucide-react';
+import {Utils} from "../utils";
 import {TrackChipView} from "./TrackChipView.tsx";
 
 const gameService = new GameService();
@@ -35,7 +35,7 @@ interface PlayedGame {
 }
 
 export function GameBoard() {
-    const { gameId, genre } = useParams();
+    const {gameId, genre} = useParams();
     const navigate = useNavigate();
     const [game, setGame] = useState<Game | null>(null);
     const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.UNKNOWN);
@@ -43,11 +43,11 @@ export function GameBoard() {
     const [stems, setStems] = useState<Array<Array<Stem>>>([]);
     const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
     const [playing, setPlaying] = useState<boolean>(false);
-    const [answers, setAnswers] = useState<Array<number|null>>([]);
+    const [answers, setAnswers] = useState<Array<number | null>>([]);
     const [points, setPoints] = useState<Array<number>>([]);
     const [activeStems, setActiveStems] = useState<StemType[]>([]);
-        const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-            const [previousScore, setPreviousScore] = useState<number>(0);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [previousScore, setPreviousScore] = useState<number>(0);
 
     // Check if the game has been played before
     const checkIfPlayed = (): PlayedGame | undefined => {
@@ -76,7 +76,7 @@ export function GameBoard() {
 
             let cancel = false;
             setGamePhase(GamePhase.LOADING);
-            setLoadingState({ gameLoaded: false, stemLoading: [] });
+            setLoadingState({gameLoaded: false, stemLoading: []});
 
             const loadGame = async () => {
                 try {
@@ -89,7 +89,7 @@ export function GameBoard() {
                     }
                     loadedGame.questions.forEach(q => q.answers = Utils.shuffleArray(q.answers));
                     if (cancel) return;
-                    umami.track('game-load', { gameId: gameId, genre: genre });
+                    umami.track('game-load', {gameId: gameId, genre: genre});
 
                     setGame(loadedGame);
                     setLoadingState({
@@ -107,21 +107,23 @@ export function GameBoard() {
             };
 
             loadGame();
-            return () => { cancel = true; };
+            return () => {
+                cancel = true;
+            };
         }
     }, [gameId, genre]);
 
     // Save game results to localStorage when done
     useEffect(() => {
         if (gamePhase === GamePhase.DONE && game) {
-            const totalPoints = points.map(p=>p||0).reduce((sum, p) => sum + p, 0);
+            const totalPoints = points.map(p => p || 0).reduce((sum, p) => sum + p, 0);
             const gameHistory = JSON.parse(localStorage.getItem('playedGames') || '[]');
 
             const newGame = {
                 gameId: game.id,
                 date: new Date().toISOString(),
                 genre: genre ? parseInt(genre) as GameGenre : undefined,
-                score: totalPoints||0,
+                score: totalPoints || 0,
                 points: points.map(p => p || 0),
             };
 
@@ -132,6 +134,7 @@ export function GameBoard() {
 
     const loadNextStems = async (tracks: Array<Track>, iterationIndex: number) => {
         if (tracks.length === 0) return;
+        const start_time = Date.now();
         const track = tracks[0];
         const newStems = await TrackService.loadStems(track, (stemLoadings) => {
             setLoadingState((oldState) => {
@@ -147,6 +150,7 @@ export function GameBoard() {
                 };
             });
         });
+        umami.track('game-load-track', {time: Date.now() - start_time, gameId: game?.id, genre: game?.genre});
 
         setStems((oldStems) => [
             ...oldStems.slice(0, iterationIndex),
@@ -168,14 +172,19 @@ export function GameBoard() {
 
     const loadStems = (game: Game) => {
         if (!game) return;
-        loadNextStems(game.questions.map(q => q.track), 0);
+        const start_time = Date.now();
+        loadNextStems(game.questions.map(q => q.track), 0).then(() => {
+            umami.track('game-load-stems', {time: Date.now() - start_time, gameId: game.id, genre: game.genre});
+        });
     };
-
     const playbackEnded = () => {
         if (!game) return;
-        if(GamePhase.PLAYING === gamePhase && (answers[currentTrack]===undefined) ){
-                answer(null)
-            }
+        if (gamePhase === GamePhase.INTERSONG) {
+            return;
+        }
+        if (GamePhase.PLAYING === gamePhase && (answers[currentTrack] === undefined)) {
+            answer(null)
+        }
         if (currentTrack === game.questions.length - 1) {
             setGamePhase(GamePhase.DONE);
         } else {
@@ -192,6 +201,7 @@ export function GameBoard() {
     const next = () => {
         if (!game) return;
         if (currentTrack === game.questions.length - 1) {
+            umami.track('game-complete', {gameId: game.id, genre: game.genre});
             setGamePhase(GamePhase.DONE);
         } else {
             if (!loadingState ||
@@ -206,7 +216,7 @@ export function GameBoard() {
             setCurrentTrack(currentTrack + 1);
         }
     };
-    const answer = (id: number|null) => {
+    const answer = (id: number | null) => {
         if (!game) return;
         let points = 0;
         if (id === game.questions[currentTrack].track.id) {
@@ -226,25 +236,25 @@ export function GameBoard() {
     };
 
     if (gamePhase === GamePhase.ALREADY_PLAYED) {
-        return <AlreadyPlayed gameId={gameId} genre={genre} score={previousScore} />;
+        return <AlreadyPlayed gameId={gameId} genre={genre} score={previousScore}/>;
     }
     const again = () => {
         navigate('/');
     };
     const handleShare = (platform: string) => {
-        umami.track('share', { platform });
+        umami.track('share', {platform});
         // You can add analytics tracking here if needed
         console.log(`Shared on ${platform}`);
     };
     if (!game || gamePhase === GamePhase.LOADING || gamePhase === GamePhase.UNKNOWN) {
         return (
             <div className="loading-area">
-                <LoadingScreen loadingState={loadingState} />
+                <LoadingScreen loadingState={loadingState}/>
             </div>
         );
     }
 
-    if (gamePhase === GamePhase.DONE ) {
+    if (gamePhase === GamePhase.DONE) {
         const total = points.reduce((sum, p) => sum + p, 0);
         return (
             <div className="result-view">
@@ -267,14 +277,14 @@ export function GameBoard() {
                         className="button primary-bg flex flex-row "
                         onClick={() => setIsShareModalOpen(true)}
                     >
-                        <Share2 size={20} />
+                        <Share2 size={20}/>
                         <span>Share</span>
                     </button>
                     <button className="button primary-bg" onClick={again}>
                         Back to Home
                     </button>
                 </div>
-              <ShareModal
+                <ShareModal
                     isOpen={isShareModalOpen}
                     onClose={() => setIsShareModalOpen(false)}
                     score={total}
@@ -292,8 +302,8 @@ export function GameBoard() {
         <div className="game-board">
             {gamePhase !== GamePhase.LOADING && (
                 <MultiTunePlayer
-                    onStemActive={setActiveStems}
-                    onReachedEnd={playbackEnded}
+                    onStemActive={(stems)=>setActiveStems(stems)}
+                    onReachedEnd={()=>playbackEnded()}
                     isPlaying={playing}
                     stems={stems[currentTrack]}
                 />
@@ -304,8 +314,8 @@ export function GameBoard() {
                         <h1 className={"text-center"}>Ready when you are</h1>
                         <div className={"card-content flex flex-col"}>
                             <button className="button primary-bg m-0" onClick={play}>
-                            Play
-                        </button>
+                                Play
+                            </button>
                         </div>
                     </div>
                 )}
