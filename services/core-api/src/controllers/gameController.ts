@@ -34,7 +34,6 @@ export class GameController {
             .select(['game.id', 'game.date', 'game.genre'])
             .where('game.date <= :now', { now: new Date() })
             .orderBy('game.date', 'DESC')
-            .limit(100)
             .getMany();
 
         return games.map(game => ({

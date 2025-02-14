@@ -50,6 +50,7 @@ export interface Question {
 }
 
 export interface Game {
+    date: string,
     genre:GameGenre,
     questions: Array<Question>,
     id:number,
