@@ -17,10 +17,10 @@ export class TrackSource {
     @Column({nullable:true})
     url: string;
 
-    @Column({ name: 'source_id' })
+    @Column({ name: 'source_id',nullable:true })
     sourceId: string;
 
-    @OneToOne(() => Track, track => track.trackSource,{onDelete: 'CASCADE'})
+    @OneToOne(() => Track, track => track.trackSource,{onDelete: "CASCADE"})
     @JoinColumn()
     track: Track;
 }

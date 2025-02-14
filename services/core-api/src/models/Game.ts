@@ -56,12 +56,13 @@ export class Question {
 
     @OneToMany(() => Answer, answer => answer.question, {
         eager: true,
-        cascade: true
+        cascade: true,
     })
     answers: Answer[];
 
     @ManyToOne(() => Track, track => track.questions, {
-        eager: true
+        eager: true,
+        onDelete: "CASCADE"
     })
     track: Track;
 }
@@ -77,7 +78,7 @@ export class Answer {
     @Column()
     title: string;
 
-    @ManyToOne(() => Question, question => question.answers)
+    @ManyToOne(() => Question, question => question.answers,{onDelete: "CASCADE"})
     question: Question;
 }
 
