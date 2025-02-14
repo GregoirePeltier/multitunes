@@ -86,7 +86,7 @@ export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre
                     isOpen={isShareModalOpen}
                     onClose={() => setIsShareModalOpen(false)}
                     score={score}
-                    total={game.questions.length * 10}
+                    total={game.questions.length * 8}
                     gameType={getGameType(game.genre)}
                     questionResults={playedDetails?.points || []}
                     gameId={game.id}

@@ -36,7 +36,7 @@ export function ShareModal({
     const generateEmojiPattern = (questionResults: number[]) => {
         return questionResults.map(points => {
             if (points === 0) return '⬛'; // Miss
-            if (points >= 7) return '🟩'; // Not Perfect but good
+            if (points >= 6) return '🟩'; // Not Perfect but good
             return '🟨'; // Partial (needed more stems)
         }).join('');
     };
@@ -57,7 +57,7 @@ export function ShareModal({
         twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`,
         linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent('https://multitunes.app')}&title=${encodeURIComponent(shareText)}`,
         threads: `https://threads.net/intent/post?text=${encodeURIComponent(shareText)}`,
-        bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText.replace(/\n/g, '<br/>'))}`
+        bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText.replace(/\n/g, '\n    '))}`
     };
 
     const handleShare = (platform: string) => {

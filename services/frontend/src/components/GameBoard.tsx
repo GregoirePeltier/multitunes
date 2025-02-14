@@ -292,7 +292,7 @@ export function GameBoard() {
                     isOpen={isShareModalOpen}
                     onClose={() => setIsShareModalOpen(false)}
                     score={total}
-                    total={game.questions.length * 10}
+                    total={game.questions.length * 8}
                     gameType={getGameType(game.genre)}
                     questionResults={points}
                     onShare={handleShare}
