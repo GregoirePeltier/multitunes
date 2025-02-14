@@ -1,11 +1,12 @@
 import {DataSource} from "typeorm";
 import {Answer, Game, Question} from "./models/Game";
-import {Track} from "./models/Track";
+import {QuizAudioStartTimes, Track, TrackQuizAudio} from "./models/Track";
 import dotenv from "dotenv";
 import {AddTrackSource1739352816556} from "./migrations/1739352816556-AddTrackSource";
 import {TrackSource} from "./models/TrackSource";
 import {AddTrackSourceId1739359062204} from "./migrations/1739359062204-AddTrackSourceId";
 import {UpdateForeignKey1739573727601} from "./migrations/1739573727601-UpdateForeignKey";
+import {CreateTrackQuizAudio1739574967268} from "./migrations/1739574967268-CreateTrackQuizAudio";
 
 
 dotenv.config({path:process.env.ENV_FILE||".env"});
@@ -19,8 +20,12 @@ export const AppDataSourceConfig = new DataSource({
     database: process.env.DB_DATABASE,
     synchronize: false,
     logging: process.env.NODE_ENV === "development",
-    entities: [Game, Track, Question, Answer, TrackSource],
-    migrations: [AddTrackSource1739352816556,AddTrackSourceId1739359062204,UpdateForeignKey1739573727601],
+    entities: [Game, Track, Question, Answer, TrackSource,TrackQuizAudio,QuizAudioStartTimes],
+    migrations: [AddTrackSource1739352816556,
+        AddTrackSourceId1739359062204,
+        UpdateForeignKey1739573727601,
+        CreateTrackQuizAudio1739574967268
+    ],
     subscribers: [],
     migrationsTableName: "migrations",
 })
