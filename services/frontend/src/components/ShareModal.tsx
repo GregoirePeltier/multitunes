@@ -43,7 +43,7 @@ export function ShareModal({
 
     const multituneLink = `https://multitunes.app/play/${gameId}`;
     const shareText = `🎵 MultiTunes ${gameType} Challenge\n${score}/${total} points!\n${generateEmojiPattern(questionResults)}\nPlay now at ${multituneLink}`;
-
+    const tweetlikeText = `🎵 #MultiTunes ${gameType} Challenge\n${score}/${total} points!\n${generateEmojiPattern(questionResults)}\nPlay now at ${multituneLink}`;
     const copyToClipboard = async () => {
         try {
             await navigator.clipboard.writeText(shareText);
@@ -54,15 +54,17 @@ export function ShareModal({
     };
 
     const shareUrls = {
-        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`,
-        linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent('https://multitunes.app')}&title=${encodeURIComponent(shareText)}`,
-        threads: `https://threads.net/intent/post?text=${encodeURIComponent(shareText)}`,
-        bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText.replace(/\n/g, '\n    '))}`
+        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetlikeText)}`,
+        threads: `https://threads.net/intent/post?text=${encodeURIComponent("we copied your score to your clipboard, you can paste it here")}`,
+        bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(tweetlikeText.replace(/\n/g, '\n    '))}`
     };
 
-    const handleShare = (platform: string) => {
+    const handleShare = async (platform: string) => {
         copyToClipboard();
         if (onShare) onShare(platform);
+        if (platform === "threads") {
+            await navigator.clipboard.writeText(shareText);
+        }
         window.open(shareUrls[platform], '_blank');
     };
     const sharePayload = {
@@ -72,7 +74,7 @@ export function ShareModal({
 
     const genericShare = async () => {
         await navigator.share(sharePayload);
-        if(onShare)onShare('generic');
+        if (onShare) onShare('generic');
     }
 
     return (
