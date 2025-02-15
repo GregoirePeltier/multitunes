@@ -56,9 +56,13 @@ export class TrackQuizAudio {
     audioUrl: string;
     @Column()
     audioTreatmentVersion: number; // This is an arbitrary number to know what track we should treat again
+    @Column()
+    questionId: number;
     @OneToOne(() => Question, question => question.id,{onDelete: "CASCADE"})
     @JoinColumn()
     question:Question
+    @OneToMany(() => QuizAudioStartTimes, quizAudioStartTime => quizAudioStartTime.trackQuizAudio)
+    quizAudioStartTimes: QuizAudioStartTimes[];
 }
 
 @Entity()
