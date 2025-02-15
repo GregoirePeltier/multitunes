@@ -1,5 +1,6 @@
 import {Game, GameGenre} from "../models/Game";
 import {Repository} from "typeorm";
+import {PreviousGameView} from "../models/previousGameId";
 
 export interface AvailableGame {
     id: number;
@@ -10,7 +11,7 @@ export interface AvailableGame {
 export class GameController {
     private gameRepository: Repository<Game>;
 
-    constructor( gameRepository: Repository<Game>) {
+    constructor( gameRepository: Repository<Game>,private previousGameRepository: Repository<PreviousGameView>) {
         this.gameRepository = gameRepository;
     }
 
@@ -41,5 +42,8 @@ export class GameController {
             date: game.date.toISOString(),
             genre: game.genre
         }));
+    }
+    async getPreviousGameId(game_id:number): Promise<number|null> {
+        return (await this.previousGameRepository.findOne({where:{game_id}}))?.previous_game_id ?? null;
     }
 }

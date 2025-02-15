@@ -1,6 +1,6 @@
 import express from 'express';
-import { GameController } from "../controllers/gameController";
-import { GameGenre } from "../models/Game";
+import {GameController} from "../controllers/gameController";
+import {GameGenre} from "../models/Game";
 
 export default function gameRoutes(gameController: GameController) {
     const router = express.Router();
@@ -10,7 +10,7 @@ export default function gameRoutes(gameController: GameController) {
             const games = await gameController.getAvailableGames();
             res.json(games);
         } catch (error) {
-            res.status(500).json({ error: 'Failed to fetch available games' });
+            res.status(500).json({error: 'Failed to fetch available games'});
         }
     });
 
@@ -22,13 +22,15 @@ export default function gameRoutes(gameController: GameController) {
             date.setHours(0, 0, 0, 0);
 
             const game = await gameController.getGame(date, genre);
+
             if (!game) {
-                res.status(404).json({ error: 'Game not found' });
+                res.status(404).json({error: 'Game not found'});
                 return;
             }
-            res.json(game);
+            const previousGameId = await gameController.getPreviousGameId(game.id) || undefined;
+            res.json({...game, previousGameId});
         } catch (error) {
-            res.status(500).json({ error: 'Failed to fetch daily game' });
+            res.status(500).json({error: 'Failed to fetch daily game'});
         }
     });
 
@@ -37,18 +39,19 @@ export default function gameRoutes(gameController: GameController) {
         try {
             const gameId = parseInt(req.params.id);
             if (isNaN(gameId)) {
-                res.status(400).json({ error: 'Invalid game ID' });
+                res.status(400).json({error: 'Invalid game ID'});
                 return;
             }
 
             const game = await gameController.getGameById(gameId);
             if (!game) {
-                res.status(404).json({ error: 'Game not found' });
+                res.status(404).json({error: 'Game not found'});
                 return;
             }
-            res.json(game);
+            const previousGameId = await gameController.getPreviousGameId(game.id) || undefined;
+            res.json({...game, previousGameId});
         } catch (error) {
-            res.status(500).json({ error: 'Failed to fetch game' });
+            res.status(500).json({error: 'Failed to fetch game'});
         }
     });
 
