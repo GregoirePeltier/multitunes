@@ -1,13 +1,20 @@
-fastapi==0.115.8
-uvicorn==0.24.0
-redis==5.0.1
+
 aiohttp==3.9.1
+## Audio Treatment
 numpy
 soundfile==0.12
 torch==2.0.0
 torchaudio==2.0.1
 demucs @ git+https://github.com/adefossez/demucs#egg=demucs
+## GCP
 google-cloud-storage==3.0.0
+functions-framework==3.*
+google-cloud-pubsub==2.*
+## Server
 pydantic==2.5.2
 pydantic-settings==2.1.0
+fastapi==0.115.8
+uvicorn==0.24.0
+requests
+## Misc
 python-multipart==0.0.6

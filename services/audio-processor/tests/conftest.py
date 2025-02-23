@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch, AsyncMock
 import redis.asyncio as redis
 from google.cloud import storage
 import json
-from app.main import app, ProcessingJob
+from app.__main__ import app, ProcessingJob
 
 @pytest.fixture
 def client():

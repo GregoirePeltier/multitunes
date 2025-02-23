@@ -7,3 +7,4 @@ flake8==6.1.0
 python-dotenv==1.0.0
 watchfiles==0.21.0
 httpx==0.28.1
+fire==0.7.0
