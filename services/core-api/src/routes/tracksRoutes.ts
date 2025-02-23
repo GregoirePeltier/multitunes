@@ -14,7 +14,7 @@ export default function tracksRoutes(
     const controller = new TrackController(tracksRepository, trackSourceRepository);
 
     // Get all tracks (public endpoint)
-    router.get("/",authenticateToken, async (req, res) => {
+    router.get("/", authenticateToken, async (req, res) => {
         try {
             const tracks = await controller.getAllTracks();
             res.json(tracks);
@@ -33,19 +33,36 @@ export default function tracksRoutes(
             res.status(500).json({error: 'Failed to create track'});
         }
     });
-
+    router.get("/:id", authenticateToken, async (req, res) => {
+        let id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            res.status(400).json({error: 'Invalid track ID'});
+            return
+        }
+        try {
+            const track = await controller.getTrackWithSource(id);
+            if (track === null){
+                res.status(404).json({error: 'Track not found'});
+                return
+            }
+            res.json(track);
+        } catch (error) {
+            console.error('Error fetching track:', error);
+            res.status(500).json({error: 'Failed to fetch track'});
+        }
+    })
     // Update track (protected endpoint)
     router.put("/:id", authenticateToken, validateTrackData, async (req, res) => {
         try {
             const trackId = parseInt(req.params.id);
             if (isNaN(trackId)) {
-                 res.status(400).json({error: 'Invalid track ID'});
-                 return
+                res.status(400).json({error: 'Invalid track ID'});
+                return
             }
 
             const track = await controller.updateTrack(trackId, req.body);
             res.json(track);
-        } catch (error:any) {
+        } catch (error: any) {
             if (error.message === 'Track not found') {
                 res.status(404).json({error: error.message});
             } else {
@@ -66,7 +83,7 @@ export default function tracksRoutes(
 
             await controller.deleteTrack(trackId);
             res.status(204).send();
-        } catch (error:any) {
+        } catch (error: any) {
             if (error.message === 'Track not found') {
                 res.status(404).json({error: error.message});
             } else {

@@ -111,4 +111,18 @@ export class TrackQuizAudioController {
     });
     return notPreparedTracks;
   }
+
+  async getById(id: number) {
+
+    const trackQuizAudio = await this.repository.findOne({
+      where: {id},
+      relations: ['quizAudioStartTimes'], // Ensures quizAudioStartTimes are included
+    });
+
+    if (!trackQuizAudio) {
+      throw new Error(`TrackQuizAudio with id ${id} not found`);
+    }
+
+    return trackQuizAudio;
+  }
 }

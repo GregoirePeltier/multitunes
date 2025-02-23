@@ -5,7 +5,26 @@ import {TrackQuizAudioController} from "../controllers/trackQuizAudioController"
 
 export const trackQuizAudioRoutes = (controller: TrackQuizAudioController) => {
     const router = Router();
+    
+    // Get a single track quiz audio by ID
+    router.get('/:id', authenticateToken, async (req, res) => {
 
+        let id = parseInt(req.params.id, 10);
+        if (isNaN(id)) {
+            res.status(400).json({error: 'Invalid ID format'});
+        }
+        
+        try {
+            const result = await controller.getById(id);
+            if (!result) {
+                res.status(404).json({error: 'Track quiz audio not found'});
+            }
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(400).json({error: (error as Error).message});
+        }
+    });
+    
     // Create a new track quiz audio
     router.post('/', authenticateToken, async (req, res) => {
         try {

@@ -1,6 +1,7 @@
 import express from 'express';
 import {GameController} from "../controllers/gameController";
 import {GameGenre} from "../models/Game";
+import {authenticateToken} from "../middleware/auth";
 
 export default function gameRoutes(gameController: GameController) {
     const router = express.Router();
@@ -54,6 +55,39 @@ export default function gameRoutes(gameController: GameController) {
             res.status(500).json({error: 'Failed to fetch game'});
         }
     });
+    router.post('/generate',authenticateToken,async (req, res) => {
+
+        try {
+            const {date:targetDate, genre} = req.body;
+
+            if (!targetDate) {
+                res.status(400).json({error: 'Target date is required'});
+                return;
+            }
+
+            const date = new Date(targetDate);
+            if (isNaN(date.getTime())) {
+                res.status(400).json({error: 'Invalid target date format'});
+                return;
+            }
+            date.setHours(0, 0, 0, 0);
+            if (genre===undefined){
+                res.status(400).json({error: 'Game genre is required'});
+                return;
+            }
+            const gameGenre = parseInt(genre) as GameGenre;
+            if (gameGenre !== undefined && isNaN(gameGenre)) {
+                res.status(400).json({error: 'Invalid game genre'});
+                return;
+            }
+
+            const generatedGame = await gameController.generateGame(date, gameGenre);
+            res.status(201).json(generatedGame);
+        } catch (error) {
+            console.error('Error generating game:', error);
+            res.status(500).json({error: 'Failed to generate game'});
+        }
+    })
 
     return router;
 }

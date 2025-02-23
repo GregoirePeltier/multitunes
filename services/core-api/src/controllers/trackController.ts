@@ -113,10 +113,11 @@ export class TrackController {
         return track;
     }
 
-    private async getTrackWithSource(trackId: number) {
+    async getTrackWithSource(trackId: number) {
         return this.tracksRepository.findOne({
             where: {id: trackId},
             relations: ['trackSource']
         });
     }
+
 }
