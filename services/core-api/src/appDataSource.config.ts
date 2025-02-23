@@ -9,7 +9,8 @@ import {UpdateForeignKey1739573727601} from "./migrations/1739573727601-UpdateFo
 import {CreateTrackQuizAudio1739574967268} from "./migrations/1739574967268-CreateTrackQuizAudio";
 import {PreviousGameView} from "./models/previousGameId";
 import {AddPreviousGameView1739645699816} from "./migrations/1739645699816-AddPreviousGameView";
-
+import {TrackGenre} from "./models/TrackGenre";
+import {AddTrackGenre1740328299784} from "./migrations/1740328299784-AddTrackGenre";
 
 dotenv.config({path:process.env.ENV_FILE||".env"});
 
@@ -22,12 +23,13 @@ export const AppDataSourceConfig = new DataSource({
     database: process.env.DB_DATABASE,
     synchronize: false,
     logging: process.env.NODE_ENV === "development",
-    entities: [Game, Track, Question, Answer, TrackSource,TrackQuizAudio,QuizAudioStartTimes,PreviousGameView],
+    entities: [Game, Track, Question, Answer, TrackSource,TrackQuizAudio,QuizAudioStartTimes,PreviousGameView,TrackGenre],
     migrations: [AddTrackSource1739352816556,
         AddTrackSourceId1739359062204,
         UpdateForeignKey1739573727601,
         CreateTrackQuizAudio1739574967268,
-        AddPreviousGameView1739645699816
+        AddPreviousGameView1739645699816,
+        AddTrackGenre1740328299784
     ],
     subscribers: [],
     migrationsTableName: "migrations",

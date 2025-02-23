@@ -1,9 +1,10 @@
-import {Answer, Game, GameGenre, Question} from "../models/Game";
+import {Answer, Game, Question} from "../models/Game";
 import {Between, Repository} from "typeorm";
 import {PreviousGameView} from "../models/previousGameId";
 import {AppDataSourceConfig} from "../appDataSource.config";
 import {Utils} from "../utils";
 import {Track} from "../models/Track";
+import {GameGenre} from "../models/GameGenre";
 
 export interface AvailableGame {
     id: number;
@@ -82,22 +83,24 @@ export class GameController {
         const forbiddenValidAnswers = validAnswerIds.map(record => record.id);
 
         const trackRepository = AppDataSourceConfig.getRepository(Track);
-        const availableTracks = await trackRepository
-            .createQueryBuilder('track')
-            .select('track.id', 'trackId')
-            .distinct(true)
-            .getRawMany();
-        const trackIds = availableTracks.map(record => record.trackId as number);
-        const possibleAnswers = trackIds.filter(trackId => !fobiddenProposedAnswers.includes(trackId));
-        const possibleRightAnswers = trackIds.filter(trackId => !fobiddenProposedAnswers.includes(trackId) && forbiddenValidAnswers.includes(trackId));
-        Utils.shuffleArray(possibleAnswers)
-        Utils.shuffleArray(possibleRightAnswers);
+        const availableTracks = (await trackRepository
+        .createQueryBuilder('track')
+        .innerJoin('track.genres', 'trackGenre')
+        .where('trackGenre.genre = :genre', { genre:gameGenre })
+        .getMany());
+
+        const trackIds = availableTracks.map(record => record.id as number);
+        let possibleAnswers = trackIds.filter(trackId => !fobiddenProposedAnswers.includes(trackId));
+        let possibleRightAnswers = trackIds.filter(trackId => !fobiddenProposedAnswers.includes(trackId) && !forbiddenValidAnswers.includes(trackId));
+        possibleAnswers=Utils.shuffleArray(possibleAnswers)
+        possibleRightAnswers=Utils.shuffleArray(possibleRightAnswers);
         const game = new Game()
         game.genre = gameGenre;
         game.date = date;
         game.questions = [];
         for (let i = 0; i < 5; i++) {
-            const track = await trackRepository.findOneOrFail({where:{id:possibleRightAnswers[i]}})
+            let id = possibleRightAnswers[i*4];
+            const track = await trackRepository.findOneOrFail({where:{id: id}})
             const question = new Question();
             question.answers = [];
             question.track = track

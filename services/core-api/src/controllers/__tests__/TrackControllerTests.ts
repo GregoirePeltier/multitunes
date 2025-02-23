@@ -2,6 +2,7 @@ import { Repository } from 'typeorm';
 import { Track } from '../../models/Track';
 import {Source, TrackSource} from '../../models/TrackSource';
 import { TrackController } from '../trackController';
+import {TrackGenre} from "../../models/TrackGenre";
 
 // Mock data
 const mockTrackData = {
@@ -11,7 +12,8 @@ const mockTrackData = {
     cover: 'http://cover.url',
     source: 'deezer' as Source,
     sourceUrl: 'http://spotify.url',
-    sourceId: 'spotify_123'
+    sourceId: 'spotify_123',
+    genres:[152, 0 ],
 };
 
 const mockTrack = {
@@ -44,20 +46,23 @@ const createMockRepositories = () => {
         insert: jest.fn(),
         update: jest.fn(),
     } as unknown as Repository<TrackSource>;
-
-    return { tracksRepository, trackSourceRepository };
+    const trackGenreRepository = {
+        findOneOrFail: jest.fn(),
+    } as unknown as Repository<TrackGenre>;
+    return { tracksRepository, trackSourceRepository,trackGenreRepository };
 };
 
 describe('TrackController', () => {
     let controller: TrackController;
     let tracksRepository: Repository<Track>;
     let trackSourceRepository: Repository<TrackSource>;
-
+    let trackGenreRepository: Repository<TrackGenre>;
     beforeEach(() => {
         const repos = createMockRepositories();
         tracksRepository = repos.tracksRepository;
         trackSourceRepository = repos.trackSourceRepository;
-        controller = new TrackController(tracksRepository, trackSourceRepository);
+        trackGenreRepository = repos.trackGenreRepository;
+        controller = new TrackController(tracksRepository, trackSourceRepository,trackGenreRepository);
     });
 
     describe('getAllTracks', () => {
@@ -117,7 +122,8 @@ describe('TrackController', () => {
                 title: mockTrackData.title,
                 artist: mockTrackData.artist,
                 preview: mockTrackData.preview,
-                cover: mockTrackData.cover
+                cover: mockTrackData.cover,
+                genres:[152, 0]
             };
 
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
@@ -170,7 +176,8 @@ describe('TrackController', () => {
                 title: 'Updated Title',
                 artist: 'Updated Artist',
                 preview: mockTrackData.preview,
-                cover: mockTrackData.cover
+                cover: mockTrackData.cover,
+                genres:[152, 0]
             };
 
             (tracksRepository.findOne as jest.Mock).mockResolvedValue(mockTrack);

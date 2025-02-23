@@ -9,21 +9,8 @@ import {
     PrimaryGeneratedColumn
 } from "typeorm";
 import {Track} from "./Track";
+import {GameGenre} from "./GameGenre";
 
-export enum GameGenre {
-    ALL=0,
-    POP = 132,
-    ROCK = 152,
-    METAL = 464,
-    RAP = 116,
-    RNB = 165,
-    FOLK = 466,
-    COUNTRY = 84,
-    FRENCH = 52,
-    SOUL = 169,
-    BLUES = 153
-}
-export const GameGenreValues = Object.values(GameGenre) as GameGenre[];
 @Entity()
 export class Game {
     @PrimaryGeneratedColumn()
@@ -35,7 +22,7 @@ export class Game {
 
     @Column({
         type: "enum",
-        enum: GameGenre
+        enum: GameGenre,
     })
     genre: GameGenre;
 

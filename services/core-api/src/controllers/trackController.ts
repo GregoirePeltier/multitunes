@@ -1,8 +1,9 @@
 import {Repository} from 'typeorm';
 import {Track} from "../models/Track";
 import {Source, TrackSource} from "../models/TrackSource";
-import {GameGenreValues} from "../models/Game";
 import DeezerService from "../services/deezerService";
+import {GameGenre, GameGenreValues} from "../models/GameGenre";
+import {TrackGenre} from "../models/TrackGenre";
 
 interface TrackData {
     title: string;
@@ -12,6 +13,7 @@ interface TrackData {
     source?: Source;
     sourceUrl?: string;
     sourceId?: string; // Added this field
+    genres: GameGenre[];
 }
 
 export class TrackController {
@@ -19,7 +21,8 @@ export class TrackController {
 
     constructor(
         private tracksRepository: Repository<Track>,
-        private trackSourceRepository: Repository<TrackSource>
+        private trackSourceRepository: Repository<TrackSource>,
+        private trackGenreRepository: Repository<TrackGenre>,
     ) {
         this.deezerService = new DeezerService();
     }
@@ -64,7 +67,12 @@ export class TrackController {
 
     private async createTrackWithSource(data: TrackData, trackId?: number) {
         const {title, artist, preview, cover, source, sourceUrl, sourceId} = data;
-
+        const genres = await Promise.all(
+            data.genres.map(
+                async genre => {
+                    const trackGenre = await this.trackGenreRepository.findOneOrFail({where: {genre: genre}});
+                    return trackGenre
+                }));
         // Create or update track
         const track = this.tracksRepository.create({
             ...(trackId && {id: trackId}),
@@ -72,9 +80,8 @@ export class TrackController {
             artist,
             preview,
             cover,
+            genres,
         });
-
-        await this.tracksRepository.insert(track);
 
         // Save the track and retrieve it after saving
         await this.tracksRepository.insert(track);
@@ -96,7 +103,12 @@ export class TrackController {
 
     private async updateTrackWithSource(data: TrackData, trackId?: number) {
         const {title, artist, preview, cover, source, sourceUrl, sourceId} = data;
-
+        const genres = await Promise.all(
+            data.genres.map(
+                async genre => {
+                    const trackGenre = await this.trackGenreRepository.findOneOrFail({where: {genre: genre}});
+                    return trackGenre
+                }));
         // Create or update track
         const track = this.tracksRepository.create({
             ...(trackId && {id: trackId}),
@@ -106,7 +118,11 @@ export class TrackController {
             cover,
         });
 
+
         await this.tracksRepository.update(trackId!, track);
+        const savedTrack = await this.tracksRepository.findOneOrFail({where: {id: track.id}});
+        savedTrack.genres = genres;
+        await this.tracksRepository.save(savedTrack);
         if (source && sourceUrl && sourceId) {
             await this.trackSourceRepository.update({track: track}, {
                 source,
@@ -140,8 +156,18 @@ export class TrackController {
                     relations: ['trackSource']
                 });
                 if (existingTrack) {
+                    console.log(`Track already exists: ${track.title_short} - ${track.artist.name}`);
+                    let trackGenres = existingTrack.genres||[];
+                    const trackUpdate:TrackData = {
+                        artist: existingTrack.artist,
+                        cover: existingTrack.cover,
+                        genres: [...trackGenres.map((g)=>g.genre),genre],
+                        preview: existingTrack.preview, title: existingTrack.title,
+                    }
+                    await this.updateTrack(existingTrack.id,trackUpdate)
                     continue;
                 }
+
                 const trackData: TrackData = {
                     title: track.title_short,
                     artist: track.artist.name,
@@ -150,12 +176,13 @@ export class TrackController {
                     source: Source.DEEZER, // Assuming 'DEEZER' is one of your Source types
                     sourceUrl: track.link,
                     sourceId: track.id.toString(),
+                    genres: [genre]
                 };
                 try {
                     await this.createTrack(trackData);
                     ingested_count++;
                     console.log(`Ingested track: ${track.title_short} - ${track.artist.name}`);
-                } catch (error:any) {
+                } catch (error: any) {
                     console.error(`Failed to ingest track: ${track.title_short} - ${error.message}`);
                 }
             }

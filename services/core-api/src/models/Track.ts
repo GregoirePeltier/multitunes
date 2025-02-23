@@ -2,6 +2,8 @@ import {
     Column,
     Entity,
     JoinColumn,
+    JoinTable,
+    ManyToMany,
     ManyToOne,
     OneToMany,
     OneToOne,
@@ -10,6 +12,8 @@ import {
 } from "typeorm";
 import {TrackSource} from "./TrackSource";
 import {Question} from "./Game";
+import {TrackGenre} from "./TrackGenre";
+
 
 @Entity()
 export class Track {
@@ -30,6 +34,11 @@ export class Track {
     questions: Question[];
     @OneToOne(() => TrackSource, trackSource => trackSource.track,{onDelete: "CASCADE"})
     trackSource: TrackSource;
+
+    @ManyToMany(() => TrackGenre)
+    @JoinTable()
+    genres: TrackGenre[];
+
 }
 
 export enum StemType {

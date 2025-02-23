@@ -13,6 +13,7 @@ import {TrackSource} from "./models/TrackSource";
 import {trackQuizAudioRoutes} from "./routes/quizzAudioRoutes";
 import {TrackQuizAudioController} from "./controllers/trackQuizAudioController";
 import {PreviousGameView} from "./models/previousGameId";
+import {TrackGenre} from "./models/TrackGenre";
 
 dotenv.config({path:process.env.ENV_FILE||".env"});
 
@@ -35,7 +36,7 @@ if(!process.env.JWT_SECRET)
 app.use(cors({ origin: origin}));
 app.use(express.json());
 app.use('/api/game', gameRoutes(gameController));
-app.use('/api/tracks',tracksRoutes(AppDataSourceConfig.getRepository(Track),AppDataSourceConfig.getRepository(TrackSource)))
+app.use('/api/tracks',tracksRoutes(AppDataSourceConfig.getRepository(Track),AppDataSourceConfig.getRepository(TrackSource),AppDataSourceConfig.getRepository(TrackGenre)))
 app.use('/api/trackaudios',trackQuizAudioRoutes(trackQuizzAudioController))
 app.get('/health', (req, res) => {
     res.json({ status: 'healthy' });

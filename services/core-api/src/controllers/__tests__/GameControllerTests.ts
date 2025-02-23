@@ -1,7 +1,8 @@
 import { GameController } from '../gameController';
-import { Game, GameGenre } from '../../models/Game';
+import { Game } from '../../models/Game';
 import {QueryBuilder, Repository} from 'typeorm';
 import Mock = jest.Mock;
+import {GameGenre} from "../../models/GameGenre";
 
 // Create mock repository
 const createMockRepository = () => ({

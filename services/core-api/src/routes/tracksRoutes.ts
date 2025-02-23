@@ -5,13 +5,15 @@ import {TrackSource} from "../models/TrackSource";
 import {authenticateToken} from '../middleware/auth';
 import {validateTrackData} from '../validators/trackValidators';
 import {TrackController} from '../controllers/trackController';
+import {TrackGenre} from "../models/TrackGenre";
 
 export default function tracksRoutes(
     tracksRepository: Repository<Track>,
-    trackSourceRepository: Repository<TrackSource>
+    trackSourceRepository: Repository<TrackSource>,
+    trackGenreRepository: Repository<TrackGenre>,
 ) {
     const router = express.Router();
-    const controller = new TrackController(tracksRepository, trackSourceRepository);
+    const controller = new TrackController(tracksRepository, trackSourceRepository,trackGenreRepository);
     router.post("/trigger_new_ingestion", authenticateToken, async (req, res) => {
         // Process in background
         setImmediate(async () => {

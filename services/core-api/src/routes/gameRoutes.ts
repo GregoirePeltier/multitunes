@@ -1,7 +1,7 @@
 import express from 'express';
 import {GameController} from "../controllers/gameController";
-import {GameGenre} from "../models/Game";
 import {authenticateToken} from "../middleware/auth";
+import {GameGenre} from "../models/GameGenre";
 
 export default function gameRoutes(gameController: GameController) {
     const router = express.Router();
