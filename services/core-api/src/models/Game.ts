@@ -23,7 +23,7 @@ export enum GameGenre {
     SOUL = 169,
     BLUES = 153
 }
-
+export const GameGenreValues = Object.values(GameGenre) as GameGenre[];
 @Entity()
 export class Game {
     @PrimaryGeneratedColumn()

@@ -12,7 +12,17 @@ export default function tracksRoutes(
 ) {
     const router = express.Router();
     const controller = new TrackController(tracksRepository, trackSourceRepository);
-
+    router.post("/trigger_new_ingestion", authenticateToken, async (req, res) => {
+        // Process in background
+        setImmediate(async () => {
+            try {
+                await controller.ingestNewTracks()
+            } catch (error) {
+                console.error("Error triggering ingestion process:", error);
+            }
+        });
+        res.status(202).send();
+    })
     // Get all tracks (public endpoint)
     router.get("/", authenticateToken, async (req, res) => {
         try {
@@ -41,7 +51,7 @@ export default function tracksRoutes(
         }
         try {
             const track = await controller.getTrackWithSource(id);
-            if (track === null){
+            if (track === null) {
                 res.status(404).json({error: 'Track not found'});
                 return
             }

@@ -1,6 +1,8 @@
 import {Repository} from 'typeorm';
 import {Track} from "../models/Track";
 import {Source, TrackSource} from "../models/TrackSource";
+import {GameGenreValues} from "../models/Game";
+import DeezerService from "../services/deezerService";
 
 interface TrackData {
     title: string;
@@ -13,10 +15,13 @@ interface TrackData {
 }
 
 export class TrackController {
+    private deezerService: DeezerService;
+
     constructor(
         private tracksRepository: Repository<Track>,
         private trackSourceRepository: Repository<TrackSource>
     ) {
+        this.deezerService = new DeezerService();
     }
 
     async getAllTracks() {
@@ -120,4 +125,41 @@ export class TrackController {
         });
     }
 
+    async ingestNewTracks() {
+        let ingested_count = 0
+        for (const genre of GameGenreValues) {
+            const tracks = await this.deezerService.getChartsByGenre(genre);
+            for (const track of tracks.data) {
+                const existingTrack = await this.tracksRepository.findOne({
+                    where: {
+                        trackSource: {
+                            source: Source.DEEZER,
+                            sourceId: track.id.toString()
+                        }
+                    },
+                    relations: ['trackSource']
+                });
+                if (existingTrack) {
+                    continue;
+                }
+                const trackData: TrackData = {
+                    title: track.title_short,
+                    artist: track.artist.name,
+                    preview: track.preview,
+                    cover: track.album.cover_medium,
+                    source: Source.DEEZER, // Assuming 'DEEZER' is one of your Source types
+                    sourceUrl: track.link,
+                    sourceId: track.id.toString(),
+                };
+                try {
+                    await this.createTrack(trackData);
+                    ingested_count++;
+                    console.log(`Ingested track: ${track.title_short} - ${track.artist.name}`);
+                } catch (error:any) {
+                    console.error(`Failed to ingest track: ${track.title_short} - ${error.message}`);
+                }
+            }
+        }
+        console.log(`Ingested ${ingested_count} tracks`);
+    }
 }
