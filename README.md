@@ -8,94 +8,128 @@ _This project should heavily feature ai generated code_
 ## Features
 
 ### Core Functionality
-- Real-time multiplayer support for competitive play
-- Progressive track revelation system
-- Score tracking and leaderboards
-- Integration with music streaming services for playlist generation
+ - Progressive track revelation system
 - Automatic track separation
 
 ### Quiz Types
 1. **Progressive Track Challenge**
    - Tracks are introduced one by one at specified intervals
    - Players score more points for early correct guesses
-   - Bonus points for identifying specific instruments or track components
 
 ### User Features
+_Nothing yet here_
 - Personal statistics and progress tracking
 - Custom playlist creation
 - Social sharing capabilities
 
-## Technical Architecture
+## Architecture
 
-### Frontend
-- React.js with TypeScript
-- Redux for state management
-- WebSocket for real-time multiplayer functionality
+- Frontend: React
+   Displays the daily quizzes, talk to the Backend
+- Backend: Nodejs
+   Supply the quizes and their history from the Database
+   Triggers the regular new quiz generation and song ingestion
+- Ingestion worker: Python( Deployed on cloud run )
+   Is regularly triggered to ingest new and unknown songs
+   Downloads, splits, overlay and upload a song
+   Needs a GPU so run on gcp Cloud Run for cheap access to one
+- Database: Postgres
+- External data: Deezer
+   We querry Deezer for musical data and extracts
 
-### Backend
-- Core-api in node.js 
-- Audio processing service to handle audio transformations,in python
-- GameServer, to handle realtime communication in elixir
-- PostgreSQL database for user data and statistics
-- Redis for caching and real-time features
-
-### External Services Integration
-- Music Streaming API Integration
-  - Playlist generation
-  - 30-second preview extraction
-  - Metadata retrieval
-
-### Audio Processing Pipeline
-1. **Track Download Service**
-   - Handles music preview retrieval from streaming services
-   - Manages download queue and rate limiting
-   - Implements caching for frequently used tracks
-
-2. **Audio Separation Service**
-   - Uses machine learning models for track separation
-   - Splits audio into components:
-     - Vocals
-     - Drums
-     - Bass
-     - Guitar
-     - Piano
-     - Other instruments
-   - Processes and optimizes separated tracks for streaming
-
-## Development Setup
+## Development Setups
 
 ### Prerequisites
 ```bash
 python >=3.8
-node >= 16.0.0
-npm >= 7.0.0
+node >= 20.0.0
 PostgreSQL >= 13
-Redis >= 6
+docker
 ```
 
 ### Installation
+
+*Frontend*
+```bash
+pushd services/frontend
+npm install
+```
+*Backend*
+```bash
+pushd services/core-api
+npm install 
+```
+*IngestionWorker*
+```bash
+pushd services/audio-processor
+python -m venv ./venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+*Development database*
+```bash
+docker compose -f docker-compose.dev.yml pull db
+```
+### Local Running
+
+#### General prerequisite
+- Prepare your .env file
+
+   You can copy dev.env for development, **obviously it need to be replaced for actual deployment**
+
+- Run your local db
+```bash
+docker compose -f docker-compose.dev.yaml --env-file dev.env up db -d
+```
+#### Launch your Backend
+```bash
+pushd services/core-api
+npm run dev --env-file=../../dev.env
+```
+#### Launch your Frontend
+```bash
+pushd services/frontend
+npm run dev
+```
+#### Run the audio api
 =========== TODO ==============
+
+
 
 ## API Documentation
 =========== TODO ==============
 
 ## Deployment
-============ TODO ============
+### Frontend
+We deploy on firebase
+```bash
+pushd services/frontend
+firebase deploy # AFTER following the firebase initialization instructions
+```
+For general purpose deployment:
+```bash
+pushd services/frontend
+npm run build
+```
+And you will need to serve the dist content, configured as a single page app
+### Backend and Database
 
-## Security Considerations
-- Rate limiting on API endpoints
-- Input validation for user submissions
-- Secure audio file processing
-- CORS configuration
-- API key rotation for external services
+We deploy naively, as we don't have a container registry setup
+```bash
+git clone https://github.com/GregoirePeltier/multitunes.git
+pushd multitunes
+```
+Setup your .env file, you can copy the dev.env and adapt it
 
-## Performance Optimization
+``` bash
+docker compose --env-file .env up
+```
+Lauches the server and it's database
 
-- Audio file caching
-- CDN integration for static assets
-- Database query optimization
-- WebSocket connection pooling
-- Lazy loading of audio tracks
+We use a nginx reverse proxy, setup to connect to the container's network
+
+### Ingestion Worker
+==== TODO====
 
 ## License
 
@@ -104,7 +138,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - Audio separation powered by Demucs
-- External music data provided by deezer radio API
+- External music data provided by deezer charts API
 - Additional music metadata from MusicBrainz
 
 
@@ -113,11 +147,14 @@ _this is a dev note of things that are still to be done_
 ## Technical
 _misc of technical remiders_
 - Update tests after rushed change to a daily test app
+- Deploy on gcp
 ## Critical
 _This is breaking the app_
 ## Needed
 _This is needed to consider the app done_
-- Have a real daily quizz system
+- Have a automated quizz generation system
+
 
 ## Nice to have
 _Things that would be nice to have, but not required_
+- Quizzes by artists

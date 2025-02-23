@@ -1,5 +1,4 @@
-import {ReactElement, useEffect, useState} from "react";
-import {StemAudio} from "./MultiTunePlayer.tsx";
+import {ReactElement} from "react";
 import {StemType} from "../model/Track.ts";
 
 interface PointSegment {
@@ -19,27 +18,15 @@ const STEM_VISUALS = new Map<StemType, ReactElement>(
 )
 
 export function AudioProgressBar(props: {
-    audioTracks: Array<StemAudio>,
     stemOrder: Array<StemType>,
     pointSegments?: PointSegment[],
+    activeStems: Array<StemType>,
     points?: number,
+    time:number
 }) {
-    const {points} = props;
-    const [time, setTime] = useState(0);
-    const activeStems = props.audioTracks.filter(({audio}) => !audio.muted).map(({stem}) => stem)
+    const {activeStems,points,time} = props;
     const progress = (time / 30) * 100
-
     const stems = props.stemOrder
-    const firstTrack = props.audioTracks[0]?.audio;
-
-    useEffect(() => {
-        if (firstTrack) {
-            const interval = setInterval(() => {
-                setTime(firstTrack.currentTime)
-            }, 100)
-            return () => clearInterval(interval);
-        }
-    }, [props.audioTracks, firstTrack]);
     const segments = props.pointSegments?.map((segment, i) => {
         return {
             endTime:props.pointSegments?.slice(0,i+1).reduce((a,b)=>a+b.duration,0)||0,

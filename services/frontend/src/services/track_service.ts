@@ -1,15 +1,19 @@
-import {Stem, StemType, Track} from "../model/Track.ts";
-import {StemLoadingState} from "../components/StemLoadingState.tsx";
-
-const STEM_BUCKET_ROOT = "https://storage.googleapis.com/multitune-stem-storage/stems"
+import {StemType, Track, TrackAudio} from "../model/Track.ts";
+const GCP_STORAGE_ROOT:string = import.meta.env.VITE_GCP_STORAGE_ROOT || ""
+const STEM_BUCKET_ROOT = `${GCP_STORAGE_ROOT}/audios`
 export const STEMS = [
     StemType.DRUMS, StemType.VOCALS, StemType.BASS, StemType.GUITAR, StemType.PIANO, StemType.OTHER
 ]
+
 
 export class TrackService {
 
     public static getTrackStemUrls(track: Track): Array<[StemType, string]> {
         return STEMS.map((stem) => [stem, `${STEM_BUCKET_ROOT}/${track.id}/${stem}.mp3`])
+    }
+
+    private static getTrackAudioUrls(track: Track):string {
+        return `${STEM_BUCKET_ROOT}/${track.id}/merged.mp3`
     }
 
     static async getStemBlob(url: string, progress: (p: number) => void): Promise<string> {
@@ -49,29 +53,11 @@ export class TrackService {
         return URL.createObjectURL(blob);
     }
 
-    static async loadStems(track: Track, onUpdate: (stems: Array<StemLoadingState>) => void): Promise<Stem[]> {
-        const urls = this.getTrackStemUrls(track);
-        const progresses = new Array(urls.length).fill(0);
-        const values = await Promise.all(urls.map(async ([type, url], url_index) => {
 
-            const blob = await this.getStemBlob(url, (progress) => {
-                progresses[url_index] = progress
-                onUpdate(
-                    progresses.map((value, index) => {
-                        return {stem: urls[index][0], loaded: false, progress: value}
-                    })
-                )
-            })
-
-            return {
-                trackId: track.id,
-                stemType: type,
-                stemBlobUrl: blob,
-            }
-        }))
-        onUpdate(progresses.map((_,index)=>{
-            return {stem: urls[index][0], loaded: true, progress: 100}
-        }))
-        return values
+    static async loadAudio(track: Track, onProgress: (loading:number) => void):Promise<TrackAudio> {
+        const url = this.getTrackAudioUrls(track);
+        const blob= await this.getStemBlob(url, onProgress)
+        onProgress(100)
+        return {trackId:track.id,audioBlobUrl:blob}
     }
 }

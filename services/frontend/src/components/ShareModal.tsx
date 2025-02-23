@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import {Twitter, Facebook, Linkedin, Link2, X, MessageCircle, MessageSquare, Share2, XIcon} from 'lucide-react';
+import  {useEffect} from 'react';
+import {Link2, Share2, X} from 'lucide-react';
 
 interface ShareModalProps {
     isOpen: boolean;
@@ -54,10 +54,10 @@ export function ShareModal({
     };
 
     const shareUrls = {
-        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetlikeText)}`,
-        threads: `https://threads.net/intent/post?text=${encodeURIComponent("we copied your score to your clipboard, you can paste it here")}`,
-        bluesky: `https://bsky.app/intent/compose?text=${encodeURIComponent(tweetlikeText.replace(/\n/g, '\n    '))}`
-    };
+        "twitter": `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetlikeText)}`,
+        "threads": `https://threads.net/intent/post?text=${encodeURIComponent("we copied your score to your clipboard, you can paste it here")}`,
+        "bluesky": `https://bsky.app/intent/compose?text=${encodeURIComponent(tweetlikeText.replace(/\n/g, '\n    '))}`
+    } as {[key:string]:string};
 
     const handleShare = async (platform: string) => {
         copyToClipboard();

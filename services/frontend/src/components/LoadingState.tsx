@@ -1,6 +1,4 @@
-import {StemLoadingState} from "./StemLoadingState.tsx";
-
 export interface LoadingState {
+    audioLoadingProgresses: Array<number>;
     gameLoaded: boolean;
-    stemLoading: Array<Array<StemLoadingState>>
 }

@@ -20,8 +20,7 @@ export function LoadingScreen(props: { loadingState: LoadingState | null }) {
         <h1 className={"card-title"}>
             Loading Your Game
         </h1>
-        {loadingState.gameLoaded && loadingState.stemLoading.map((loading, index) => {
-            let loadingValue = loading?mean(loading.map((l) => l.progress)):0;
+        {loadingState.gameLoaded && loadingState.audioLoadingProgresses.map((loadingValue, index) => {
             return <div key={index} style={{display:"flex",minWidth:"100%",alignItems:"center",justifyContent:"center"}}>
                 <div style={{textWrap:"nowrap",margin:"0.5em"}}>Track {index+1}</div>
                 {<ProgressBar value={loadingValue} total={100}/>}
@@ -31,6 +30,3 @@ export function LoadingScreen(props: { loadingState: LoadingState | null }) {
     </div>
 }
 
-function mean(values: Array<number>): number {
-    return values.reduce((a, b) => a + b) / values.length
-}

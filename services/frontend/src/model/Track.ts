@@ -13,6 +13,10 @@ export interface SoureLink{
 export enum TrackSource{
     DEEZER = "deezer",
 }
+export interface TrackAudio{
+    trackId:number;
+    audioBlobUrl:string;
+}
 export interface Stem{
     trackId:number;
     stemType: StemType;

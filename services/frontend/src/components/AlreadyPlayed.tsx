@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Game, GameService, getGameType} from '../services/GameService';
 import {TrackChipView} from './TrackChipView';
@@ -51,7 +51,7 @@ export const AlreadyPlayed = ({ gameId, genre, score }: { gameId?: string, genre
 
     if (loading || !game) {
         return <div className="loading-area">
-            <LoadingScreen loadingState={{ gameLoaded: false, stemLoading: [] }} />
+            <LoadingScreen loadingState={{ gameLoaded: false, audioLoadingProgresses: [] }} />
         </div>;
     }
 

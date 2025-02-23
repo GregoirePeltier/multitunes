@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import {useParams, useNavigate} from "react-router-dom";
-import {Game, GameService, GameGenre, getGameType} from "../services/GameService";
+import {useNavigate, useParams} from "react-router-dom";
+import {Game, GameGenre, GameService, getGameType} from "../services/GameService";
 import {MultiTunePlayer} from "./MultiTunePlayer";
 import {AnswerBoard} from "./AnswerBoard";
 import {QuestionResult} from "./QuestionResult";
@@ -8,7 +8,7 @@ import {LoadingScreen} from "./LoadingScreen";
 import {ShareModal} from "./ShareModal";
 import {AlreadyPlayed} from "./AlreadyPlayed";
 
-import {Stem, StemType, Track} from "../model/Track";
+import {StemType, Track, TrackAudio} from "../model/Track";
 import {TrackService} from "../services/track_service";
 import {LoadingState} from "./LoadingState";
 import {Share2} from 'lucide-react';
@@ -40,7 +40,7 @@ export function GameBoard() {
     const [game, setGame] = useState<Game | null>(null);
     const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.UNKNOWN);
     const [currentTrack, setCurrentTrack] = useState(0);
-    const [stems, setStems] = useState<Array<Array<Stem>>>([]);
+    const [trackAudioData, setTrackAudioData] = useState<Array<TrackAudio>>([]);
     const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
     const [playing, setPlaying] = useState<boolean>(false);
     const [answers, setAnswers] = useState<Array<number | null>>([]);
@@ -76,7 +76,7 @@ export function GameBoard() {
 
             let cancel = false;
             setGamePhase(GamePhase.LOADING);
-            setLoadingState({gameLoaded: false, stemLoading: []});
+            setLoadingState({gameLoaded: false, audioLoadingProgresses: []});
 
             const loadGame = async () => {
                 try {
@@ -94,12 +94,13 @@ export function GameBoard() {
                     setGame(loadedGame);
                     setLoadingState({
                         gameLoaded: true,
-                        stemLoading: new Array(loadedGame.questions.length)
+                        audioLoadingProgresses: new Array(loadedGame.questions.length)
                     });
-                    setStems(Array(loadedGame.questions.length).map(() => []));
+                    setTrackAudioData(Array(loadedGame.questions.length));
+
                     setAnswers(Array(loadedGame.questions.length));
                     setPoints(Array(loadedGame.questions.length));
-                    loadStems(loadedGame);
+                    loadAudio(loadedGame);
                 } catch (error) {
                     console.error('Failed to load game:', error);
                     setGamePhase(GamePhase.UNKNOWN);
@@ -132,31 +133,30 @@ export function GameBoard() {
         }
     }, [gamePhase, game, points, gameId, genre]);
 
-    const loadNextStems = async (tracks: Array<Track>, iterationIndex: number) => {
+    const loadNextaudio = async (tracks: Array<Track>, iterationIndex: number) => {
         if (tracks.length === 0) return;
         const start_time = Date.now();
         const track = tracks[0];
-        const newStems = await TrackService.loadStems(track, (stemLoadings) => {
+        const newaudio = await TrackService.loadAudio(track, (progress) => {
             setLoadingState((oldState) => {
                 if (!oldState) return null;
-                const loadings = oldState.stemLoading;
+                const progresses = oldState.audioLoadingProgresses;
                 return {
                     ...oldState,
-                    stemLoading: [
-                        ...loadings.slice(0, iterationIndex),
-                        stemLoadings,
-                        ...loadings.slice(iterationIndex + 1)
+                    audioLoadingProgresses: [
+                        ...progresses.slice(0, iterationIndex),
+                        progress,
+                        ...progresses.slice(iterationIndex + 1)
                     ]
-                };
-            });
-        });
+                }
+            })
+        })
         umami.track('game-load-track', {time: Date.now() - start_time, gameId: game?.id, genre: game?.genre});
-
-        setStems((oldStems) => [
-            ...oldStems.slice(0, iterationIndex),
-            newStems,
-            ...oldStems.slice(iterationIndex + 1)
-        ]);
+        setTrackAudioData((oldData) => [
+            ...oldData.slice(0, iterationIndex),
+            newaudio,
+            ...oldData.slice(iterationIndex + 1)
+        ])
 
         setGamePhase((phase) => {
             if (phase === GamePhase.LOADING || phase === GamePhase.UNKNOWN) {
@@ -166,14 +166,14 @@ export function GameBoard() {
             return phase;
         });
 
-        await loadNextStems(tracks.slice(1), iterationIndex + 1);
+        await loadNextaudio(tracks.slice(1), iterationIndex + 1);
     };
 
 
-    const loadStems = (game: Game) => {
+    const loadAudio = (game: Game) => {
         if (!game) return;
         const start_time = Date.now();
-        loadNextStems(game.questions.map(q => q.track), 0).then(() => {
+        loadNextaudio(game.questions.map(q => q.track), 0).then(() => {
             umami.track('game-load-stems', {time: Date.now() - start_time, gameId: game.id, genre: game.genre});
         });
     };
@@ -204,11 +204,7 @@ export function GameBoard() {
             umami.track('game-complete', {gameId: game.id, genre: game.genre});
             setGamePhase(GamePhase.DONE);
         } else {
-            if (!loadingState ||
-                loadingState.stemLoading[currentTrack + 1]?.some(loading => !loading.loaded) ||
-                !stems[currentTrack + 1] ||
-                stems[currentTrack + 1].length === 0
-            ) {
+            if (!loadingState || loadingState.audioLoadingProgresses[currentTrack + 1] != 100) {
                 setGamePhase(GamePhase.LOADING);
             } else {
                 setGamePhase(GamePhase.PLAYING);
@@ -220,11 +216,11 @@ export function GameBoard() {
         if (!game) return;
         let points = 0;
         if (id === game.questions[currentTrack].track.id) {
-            points= 8;
-            if(activeStems.includes(StemType.BASS)) points = 7;
-            if(activeStems.includes(StemType.DRUMS))points=6;
-            if(activeStems.includes(StemType.GUITAR))points=5;
-            if(activeStems.includes(StemType.VOCALS))points=4;
+            points = 8;
+            if (activeStems.includes(StemType.BASS)) points = 7;
+            if (activeStems.includes(StemType.DRUMS)) points = 6;
+            if (activeStems.includes(StemType.GUITAR)) points = 5;
+            if (activeStems.includes(StemType.VOCALS)) points = 4;
         }
         setPoints(oldPoints => [
             ...oldPoints.slice(0, currentTrack).map(p => p || 0),
@@ -306,10 +302,12 @@ export function GameBoard() {
         <div className="game-board">
             {gamePhase !== GamePhase.LOADING && (
                 <MultiTunePlayer
-                    onStemActive={(stems)=>setActiveStems(stems)}
-                    onReachedEnd={()=>playbackEnded()}
+                    onStemActive={(stems) => {
+                        setActiveStems(stems);
+                    }}
+                    onReachedEnd={() => playbackEnded()}
                     isPlaying={playing}
-                    stems={stems[currentTrack]}
+                    trackAudioData={trackAudioData[currentTrack]}
                     points={points[currentTrack]}
                 />
             )}

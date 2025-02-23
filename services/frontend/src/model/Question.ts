@@ -1,8 +1,6 @@
 import {Track} from "./Track.ts";
 
 export interface Question {
-    id: number;
-    track:Track;
+   track:Track;
     answers:Array<Track>;
-
 }

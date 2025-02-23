@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {GameGenre, GameService} from '../services/GameService';
 import {PlayedGameDetails} from "../model/PlayedGameDetails.ts";
@@ -24,6 +24,7 @@ const getScoreColor = (score: number) => {
 const getGenreName = (genre?: GameGenre) => {
     if (!genre) return 'All';
     const genres: { [key in GameGenre]: string } = {
+        [GameGenre.ALL]: 'General',
         [GameGenre.POP]: 'Pop',
         [GameGenre.ROCK]: 'Rock',
         [GameGenre.METAL]: 'Metal',

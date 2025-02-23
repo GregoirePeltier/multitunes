@@ -1,21 +1,21 @@
 // @flow
 
-import {Stem, StemType} from "../model/Track.ts";
-import {ReactElement, useCallback, useEffect, useState} from "react";
+import {StemType, TrackAudio} from "../model/Track.ts";
+import {useCallback, useEffect, useState} from "react";
 import {AudioProgressBar} from "./AudioProgressBar.tsx";
 
 type Props = {
-    stems: Array<Stem>;
+    trackAudioData: TrackAudio;
     onReachedEnd: () => void;
     isPlaying: boolean;
-    onStemActive:(stems: Array<StemType>) => void;
+    onStemActive: (stems: Array<StemType>) => void;
     points?: number;
 };
 export type StemAudio = {
     stem: StemType,
     audio: HTMLAudioElement,
 };
-const TIME_LIMIT=30;
+const TIME_LIMIT = 30;
 const STEM_TIMES = new Map<StemType, number>(
     [
         [StemType.PIANO, 0],
@@ -27,91 +27,84 @@ const STEM_TIMES = new Map<StemType, number>(
     ]
 )
 const POINT_SEGMENTS = [
-    {duration:5,points:8},
-    {duration:5,points:7},
-    {duration:5,points:6},
-    {duration:5,points:5},
-    {duration:10,points:4},
+    {duration: 5, points: 8},
+    {duration: 5, points: 7},
+    {duration: 5, points: 6},
+    {duration: 5, points: 5},
+    {duration: 10, points: 4},
 ]
 
 export function MultiTunePlayer(props: Props) {
-    const { stems, isPlaying,onReachedEnd,points} = props;
-    const [stemAudios, setStemAudios] = useState<Array<StemAudio>>([]);
-
+    const {trackAudioData, isPlaying, onReachedEnd, points, onStemActive} = props;
+    const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement|null>(null);
+    const [activeStems, setActiveStems] = useState<Array<StemType>>([]);
+    const [time, setTime] = useState(0);
     const reachedEnd = useCallback(() => {
-        stemAudios.forEach((t) => {
-            t.audio.pause()
-        })
+        audioPlayer?.pause()
         onReachedEnd()
-    },[stemAudios,onReachedEnd])
+    }, [audioPlayer, onReachedEnd])
     useEffect(() => {
-        stemAudios.forEach(({audio}) => {
-            if (audio.paused && isPlaying) {
-                audio.play();
-            } else if (!audio.paused && !isPlaying) {
-                audio.pause()
-            }
-        })
-    }, [stemAudios, isPlaying]);
+        if (!audioPlayer) {
+            return;
+        }
+        if (audioPlayer.paused && isPlaying) {
+            audioPlayer.play();
+            setActiveStems([StemType.PIANO, StemType.OTHER ])
+        } else if (!audioPlayer.paused && !isPlaying) {
+            audioPlayer.pause()
+        }
+
+    }, [audioPlayer, isPlaying]);
     useEffect(() => {
-        if (!stems ){return}
-        setStemAudios([]);
-        const stemAudios = stems.map((stem) => {
-            const audio = new Audio();
-            audio.src = stem.stemBlobUrl
-            audio.muted = true;
-            audio.loop = false;
-            return {
-                stem: stem.stemType,
-                audio: audio
-            }
-        })
-        stemAudios[0].audio.addEventListener("timeupdate", () => {
-            stemAudios.forEach(({stem, audio}) => {
-                const currentTime = audio.currentTime;
-                const shouldBeActive = currentTime > (STEM_TIMES.get(stem) || 0);
-                if (shouldBeActive && audio.muted) {
-                    audio.muted = false;
-                    props.onStemActive(stemAudios.filter(({audio })=>!audio.muted).map(({stem})=>stem))
-                } else if (!audio.muted && !shouldBeActive) {
-                    audio.muted = true;
-                }
-            })
-
-        })
-
-        setStemAudios(stemAudios);
+        if (!trackAudioData) return;
+        setAudioPlayer(null);
+        const newPlayer = new Audio();
+        newPlayer.src = trackAudioData.audioBlobUrl;
+        newPlayer.muted = false;
+        newPlayer.loop = false;
+        setAudioPlayer(newPlayer)
         return () => {
-            stemAudios.forEach((t) => {
-                t.audio.pause();
-                t.audio.remove()
-            })
-        }
-    }, [stems]);
-    useEffect(() => {
-        if (!stemAudios || stemAudios.length == 0) {
-            return
-        }
+            newPlayer.pause();
+            newPlayer.remove();
 
-        const endReachedListener = ()=>{
-            if (stemAudios[0].audio.currentTime >= TIME_LIMIT) {
+        }
+    }, [trackAudioData]);
+    useEffect(() => {
+        onStemActive(activeStems)
+    }, [onStemActive,activeStems]);
+    useEffect(() => {
+        if(!audioPlayer) return;
+        const playerProgressTimer = () => {
+            if (audioPlayer.currentTime >= TIME_LIMIT) {
                 reachedEnd()
             }
+            const currentTime = audioPlayer.currentTime;
+            STEM_TIMES.forEach((time, stem) => {
+                if (currentTime > time && !activeStems.includes(stem)) {
+                    const newStems = [...activeStems, stem];
+                    setActiveStems(newStems)
+                }
+            })
         };
-        stemAudios[0].audio.addEventListener("timeupdate",endReachedListener)
+        audioPlayer.addEventListener("timeupdate", playerProgressTimer);
+        const interval = setInterval(() => {
+            setTime(audioPlayer.currentTime)
+        },100)
         return ()=>{
-            stemAudios[0].audio.removeEventListener("timeupdate",endReachedListener)
+            audioPlayer.removeEventListener("timeupdate", playerProgressTimer)
+            clearInterval(interval)
         }
-    }, [stemAudios,reachedEnd]);
+    }, [audioPlayer,reachedEnd, onStemActive]);
 
-    if (!stemAudios) {
-        return <div>Loading Stems</div>
+    if (!trackAudioData) {
+        return <div>Loading Audio</div>
     }
 
-    const stemOrder = stemAudios.map(({stem})=>stem).sort((a, b)=>(STEM_TIMES.get(a)||0)-(STEM_TIMES.get(b)||0));
+    const stemOrder = Array.from(STEM_TIMES.entries()).sort(([,a], [,b]) => (a) - (b )).map(([stem,])=>stem);
     return (
         <div className={"player"}>
-            {stemAudios.length != 0 && <AudioProgressBar points={points} audioTracks={stemAudios} stemOrder={stemOrder} pointSegments={POINT_SEGMENTS}/>}
+             <AudioProgressBar points={points}  stemOrder={stemOrder} activeStems={activeStems} time={time}
+                                                         pointSegments={POINT_SEGMENTS}/>
         </div>
     );
 }
