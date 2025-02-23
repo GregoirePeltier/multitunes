@@ -50,14 +50,17 @@ describe('TrackQuizAudioController', () => {
 
 
             const res = await controller.create(mockData);
-
-            expect(repository.create).toHaveBeenCalledWith(mockData);
+            const expectedTrackQuizzData = {
+                ...mockData,
+                stemsStarts: undefined
+            }
+            expect(repository.create).toHaveBeenCalledWith(expectedTrackQuizzData);
             expect(repository.insert).toHaveBeenCalledWith(mockAudio);
             expect(startTimeRepository.create).toHaveBeenCalledTimes(2);
             expect(startTimeRepository.insert).toHaveBeenCalledTimes(2);
             expect(repository.findOne).toHaveBeenCalledWith({
                 where: {id: 1},
-                relations: ['startTimes'],
+                relations: ['quizAudioStartTimes'],
             });
             expect(res).toEqual({...mockAudio, quizAudioStartTimes: []});
         });
@@ -73,7 +76,7 @@ describe('TrackQuizAudioController', () => {
 
             expect(repository.findOne).toHaveBeenCalledWith({
                 where: {id: 1},
-                relations: ['startTimes'],
+                relations: ['quizAudioStartTimes'],
             });
             expect(res).toEqual(mockAudio);
         });

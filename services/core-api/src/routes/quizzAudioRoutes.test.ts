@@ -29,9 +29,11 @@ describe("trackQuizAudioRoutes", () => {
         it("should create a new track quiz audio", async () => {
             const mockRequestBody = {
                 audioUrl: "http://audio.url",
-                quizId: 1,
                 trackId: 2,
                 stemsStarts: [["vocals", 10]],
+                prepared:false,
+                audioTreatmentVersion:1,
+                questionId:1,
             };
             const mockResponse = {id: 1, ...mockRequestBody};
             controller.create.mockResolvedValue(mockResponse as any);
@@ -75,7 +77,9 @@ describe("trackQuizAudioRoutes", () => {
         it("should update a track quiz audio", async () => {
             const mockRequestBody = {
                 audioUrl: "http://updated.audio.url",
-                quizId: 1,
+                "audioTreatmentVersion": 2,
+                prepared: true,
+                questionId: 2,
                 trackId: 2,
                 stemsStarts: [["bass", 20]],
             };

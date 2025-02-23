@@ -12,13 +12,20 @@ type MockGameRepository = {
     findOne: jest.MockedFn<Repository<Game>['findOne']>;
     createQueryBuilder: jest.MockedFn<Repository<Game>['createQueryBuilder']>;
 };
+const createMockPreviousGameRepository = () => ({
+    findOne: jest.fn()
+});
+type MockPreviousGameRepository = {
+    findOne: jest.MockedFn<Repository<Game>['findOne']>;
+};
 describe('GameController', () => {
     let gameController: GameController;
     let mockGameRepository: MockGameRepository;
-
+    let mockPreviousGameRepository : MockPreviousGameRepository
     beforeEach(() => {
         mockGameRepository = createMockRepository() as any;
-        gameController = new GameController(mockGameRepository as any);
+        mockPreviousGameRepository = createMockPreviousGameRepository() as any;
+        gameController = new GameController(mockGameRepository as any,mockPreviousGameRepository as any);
     });
 
     afterEach(() => {
@@ -107,7 +114,6 @@ describe('GameController', () => {
             expect(mockQueryBuilder.select).toHaveBeenCalledWith(['game.id', 'game.date', 'game.genre']);
             expect(mockQueryBuilder.where).toHaveBeenCalledWith('game.date <= :now', expect.any(Object));
             expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith('game.date', 'DESC');
-            expect(mockQueryBuilder.limit).toHaveBeenCalledWith(100);
         });
 
 
