@@ -1,4 +1,4 @@
-
+gunicorn==23.0.0
 aiohttp==3.9.1
 ## Audio Treatment
 numpy
@@ -14,7 +14,8 @@ google-cloud-pubsub==2.*
 pydantic==2.5.2
 pydantic-settings==2.1.0
 fastapi==0.115.8
-uvicorn==0.24.0
 requests
 ## Misc
 python-multipart==0.0.6
+fire==0.7.0
+pydub==0.25.1

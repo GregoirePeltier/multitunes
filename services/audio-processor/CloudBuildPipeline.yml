@@ -1,0 +1,38 @@
+substitutions:
+  _REGION: europe-west9
+  _SERVICE_NAME: audio-processor
+  _PUBSUB_TOPIC: audio-processor-jobs
+
+
+steps:
+  # Build and push the image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [ 'build', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}', '.' ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}']
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_SERVICE_NAME}'
+      - '--image'
+      - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--no-allow-unauthenticated'
+
+  # Create Pub/Sub topic
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud pubsub topics create ${_PUBSUB_TOPIC} || true
+
+
+images:
+  - 'gcr.io/${PROJECT_ID}/${_SERVICE_NAME}'
