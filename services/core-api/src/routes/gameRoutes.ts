@@ -84,6 +84,9 @@ export default function gameRoutes(gameController: GameController) {
             const generatedGame = await gameController.generateGame(date, gameGenre);
             res.status(201).json(generatedGame);
         } catch (error) {
+            if (error instanceof Error && error.message.includes('Game for genre and date exists')){
+                res.status(409).json({error: error.message});
+            }
             console.error('Error generating game:', error);
             res.status(500).json({error: 'Failed to generate game'});
         }

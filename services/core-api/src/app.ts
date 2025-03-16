@@ -14,6 +14,7 @@ import {trackQuizAudioRoutes} from "./routes/quizzAudioRoutes";
 import {TrackQuizAudioController} from "./controllers/trackQuizAudioController";
 import {PreviousGameView} from "./models/previousGameId";
 import {TrackGenre} from "./models/TrackGenre";
+import {AudioTaskService} from "./services/taskService";
 
 dotenv.config({path:process.env.ENV_FILE||".env"});
 
@@ -24,8 +25,11 @@ AppDataSourceConfig.initialize()
     .catch((error) => console.log(error))
 const gameRespository = AppDataSourceConfig.getRepository(Game);
 const previousGameRepository = AppDataSourceConfig.getRepository(PreviousGameView);
+const trackRepository = AppDataSourceConfig.getRepository(Track);
+const audioRepository = AppDataSourceConfig.getRepository(TrackQuizAudio);
+const audioTaskService = new AudioTaskService();
 const app = express();
-const gameController = new GameController(gameRespository,previousGameRepository);
+const gameController = new GameController(gameRespository,previousGameRepository, audioTaskService,trackRepository,audioRepository);
 const trackQuizzAudioController = new TrackQuizAudioController(AppDataSourceConfig.getRepository(TrackQuizAudio),AppDataSourceConfig.getRepository(QuizAudioStartTimes))
 let origin = process.env.TS_NODE_DEV?"*":'https://multitunes.app';
 if(!process.env.JWT_SECRET)

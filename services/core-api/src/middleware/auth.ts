@@ -10,6 +10,20 @@ declare global {
     }
 }
 
+/**
+ * Generates a JWT token with a specified expiration time.
+ *
+ * @param payload - The data to include in the JWT payload.
+ * @param duration - The time duration for which the token will be valid (e.g., '1h', '30m', '7d').
+ * @returns The generated JWT token as a string.
+ */
+export const generateToken = (payload: object, duration: any): string => {
+    const secretOrPrivateKey = process.env.JWT_SECRET;
+    if (!secretOrPrivateKey) {
+        throw new Error("JWT_SECRET not set");
+    }
+    return jwt.sign(payload, secretOrPrivateKey, {expiresIn: duration});
+};
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];

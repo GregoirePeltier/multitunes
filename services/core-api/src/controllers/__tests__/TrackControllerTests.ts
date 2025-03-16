@@ -38,7 +38,8 @@ const createMockRepositories = () => {
         create: jest.fn(),
         update: jest.fn(),
         insert: jest.fn(),
-        delete: jest.fn()
+        delete: jest.fn(),
+        save:jest.fn(),
     } as unknown as Repository<Track>;
 
     const trackSourceRepository = {
@@ -150,9 +151,11 @@ describe('TrackController', () => {
 
     describe('updateTrack', () => {
         it('should update an existing track with source', async () => {
+            (tracksRepository.findOneOrFail as jest.Mock).mockResolvedValue(mockTrack);
             (tracksRepository.findOne as jest.Mock).mockResolvedValue(mockTrack);
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
             (tracksRepository.update as jest.Mock).mockResolvedValue(undefined);
+            (tracksRepository.save as jest.Mock).mockResolvedValue(mockTrack);
             (trackSourceRepository.create as jest.Mock).mockReturnValue(mockTrackSource);
             (trackSourceRepository.update as jest.Mock).mockResolvedValue(undefined);
 
@@ -181,6 +184,7 @@ describe('TrackController', () => {
             };
 
             (tracksRepository.findOne as jest.Mock).mockResolvedValue(mockTrack);
+            (tracksRepository.findOneOrFail as jest.Mock).mockResolvedValue(mockTrack);
             (tracksRepository.create as jest.Mock).mockReturnValue(mockTrack);
             (tracksRepository.update as jest.Mock).mockResolvedValue(undefined);
 

@@ -5,7 +5,16 @@ import {TrackQuizAudioController} from "../controllers/trackQuizAudioController"
 
 export const trackQuizAudioRoutes = (controller: TrackQuizAudioController) => {
     const router = Router();
-    
+
+// Route to list the tracks that are not prepared
+    router.get('/not-prepared', authenticateToken, async (req, res) => {
+        try {
+            const result = await controller.getNotPreparedTracks();
+            res.status(200).json(result);
+        } catch (error) {
+            res.status(400).json({error: (error as Error).message});
+        }
+    });
     // Get a single track quiz audio by ID
     router.get('/:id', authenticateToken, async (req, res) => {
 
@@ -21,6 +30,12 @@ export const trackQuizAudioRoutes = (controller: TrackQuizAudioController) => {
             }
             res.status(200).json(result);
         } catch (error) {
+            console.error(
+                'Error getting track quiz audio by ID:',
+                error
+            )
+            if (res.headersSent) return;
+
             res.status(400).json({error: (error as Error).message});
         }
     });
@@ -69,14 +84,5 @@ export const trackQuizAudioRoutes = (controller: TrackQuizAudioController) => {
         }
     });
 
-// Route to list the tracks that are not prepared
-    router.get('/not-prepared', authenticateToken, async (req, res) => {
-        try {
-            const result = await controller.getNotPreparedTracks();
-            res.status(200).json(result);
-        } catch (error) {
-            res.status(400).json({error: (error as Error).message});
-        }
-    });
     return router;
 };

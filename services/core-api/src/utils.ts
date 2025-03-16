@@ -1,12 +1,17 @@
 export const Utils = {
-    shuffleArray<T>(array:Array<T>): Array<T> {
-        const newArray = [...array]; // Create a copy to avoid mutating the original
-        for (let i = newArray.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            const temp = newArray[i];
-            newArray[i] = newArray[j];
-            newArray[j] = temp;
-          }
-        return newArray;
-    }
+    shuffleArray<T>(array:Array<T>) :Array<T>{
+  // Make a copy to avoid mutating the original array
+  const shuffled = [...array];
+
+  // For each element from the end to the beginning
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    // Pick a random element from the unshuffled portion
+    const j = Math.floor(Math.random() * (i + 1));
+
+    // Swap the current element with the randomly selected one
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
+}
 }
