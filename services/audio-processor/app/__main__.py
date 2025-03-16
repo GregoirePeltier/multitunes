@@ -38,7 +38,12 @@ class AudioProcessingCLI:
         # Process the track
         processor.process()
         print("Procesing complete")
-
+    def dev_host(self,port:int = 7777):
+        from app.server import app
+        app.run(
+            host="0.0.0.0",
+            port=port
+        )
 
 def main():
     fire.Fire(AudioProcessingCLI)
@@ -46,3 +51,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
