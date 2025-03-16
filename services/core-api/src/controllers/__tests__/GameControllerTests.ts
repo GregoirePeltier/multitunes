@@ -220,8 +220,9 @@ describe('GameController', () => {
                 andWhere: jest.fn().mockReturnThis(),
                 getRawMany: jest.fn().mockResolvedValue([]),
             };
-
             mockGameRepository.createQueryBuilder.mockReturnValue(mockGameQueryBuilder as any);
+
+            mockGameRepository.find.mockResolvedValue([])
 
             mockTrackQueryBuilder = {
                 innerJoin: jest.fn().mockReturnThis(),
@@ -353,7 +354,6 @@ describe('GameController', () => {
             // But if it does, this is reasonable something to examine
             const testDate = new Date('2025-03-20');
             const testGenre = GameGenre.POP;
-            mockGameRepository.find.mockResolvedValue([])
             const firstGame = await gameController.generateGame(testDate, testGenre);
             const firstGameAnswers = firstGame.questions.flatMap(question => question.track).map(track => track.id);
             let attemps = 100;
@@ -368,6 +368,20 @@ describe('GameController', () => {
             expect(attemps).toBeGreaterThan(0);
             expect(firstGameAnswers.filter((v) => secondGameAnswers.includes(v))).toHaveLength(0);
         })
-    })
+        it("Should trigger processing for unprocessed tracks",async()=>{
+            const testDate = new Date('2025-03-20');
+            const testGenre = GameGenre.POP;
 
+            const game = await gameController.generateGame(testDate, testGenre);
+            const answers = game.questions.flatMap(question => question.track).map(track => track.id);
+            for (let answerId of answers) {
+                expect(mockQuizzAudioRepository.save).toHaveBeenCalledWith(expect.objectContaining({
+                    track:expect.objectContaining( {id: answerId})
+                }))
+                const mockQuizzAudio = mockQuizzAudioRepository
+                    .save.mock.results.find(result => (result.value as any).track.id === answerId)?.value as any
+                expect(mockAudioTaskService.processAudio).toHaveBeenCalledWith(mockQuizzAudio.id)
+            }
+        })
+    })
 });
