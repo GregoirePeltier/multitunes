@@ -43,8 +43,8 @@ def handle_pubsub_message(cloud_event):
         validated_data = TrackProcessingRequest(**message_data)
         track_processor = TrackProcessor(validated_data)
         track_processor.process()
-        return 200
+        return ("",200)
 
     except Exception as e:
             print(f"Error processing message: {str(e)}")
-            raise
+            raise e

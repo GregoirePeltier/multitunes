@@ -9,8 +9,20 @@ settings = get_settings()
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=settings.GOOGLE_APPLICATION_CREDENTIALS
 logger.info("Initializing gcs connection")
 BUCKET_NAME = settings.GCS_BUCKET_NAME
-storage_client = storage.Client()
+if settings.GCS_ENDPOINT:
+    storage_client = storage.Client(
+        project=settings.GCP_PROJECT_ID,
+        client_options={
+            "api_endpoint": settings.GCS_ENDPOINT
+        }
+    )
+else:
+    storage_client = storage.Client()
+
 bucket = storage_client.bucket(BUCKET_NAME)
+if not bucket.exists():
+    logger.info(f"Creating GCS bucket {BUCKET_NAME}")
+    bucket.create()
 logger.info(f"Connected to GCS bucket {BUCKET_NAME}")
 logger.info("GCS connection initialized")
 
