@@ -8,11 +8,11 @@ services:
       - multitunes_network
   db:
     hostname: multitunes-db
-    image: postgres
+    image: postgres:16
     restart: always
     shm_size: 128mb
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data \
+      - ./data/postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: ${DATABASE_ADMIN_PASSWORD}
 

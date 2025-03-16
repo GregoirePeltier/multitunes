@@ -45,6 +45,7 @@ python >=3.8
 node >= 20.0.0
 PostgreSQL >= 13
 docker
+gcloud console
 ```
 
 ### Installation
@@ -74,26 +75,36 @@ docker compose -f docker-compose.dev.yml pull db
 
 #### General prerequisite
 - Prepare your .env file
-
    You can copy dev.env for development, **obviously it need to be replaced for actual deployment**
-
 - Run your local db
 ```bash
-docker compose -f docker-compose.dev.yaml --env-file dev.env up db -d
+docker compose -f docker-compose.dev.yml --env-file dev.env up db -d
+```
+- Run a local GCS emulation
+```bash
+docker run -d -v ${pwd}/data/fake-gcs:/data --name fake-gcs-server --rm -p 4443:4443 fsouza/fake-gcs-server -scheme http -public-host localhost
+
 ```
 #### Launch your Backend
 ```bash
 pushd services/core-api
 npm run dev --env-file=../../dev.env
 ```
+The backend will fail to start if you don't have a gcloud pubsub emulator running ( see [Run the audio api](#run-the-audio-api))
+
 #### Launch your Frontend
 ```bash
 pushd services/frontend
 npm run dev
 ```
-#### Run the audio api
-=========== TODO ==============
 
+#### Run the audio api
+This is meant to run as a gcloud so there is a bunch of sidecar services needed
+
+```bash
+gcloud beta emulators pubsub start --project=$PROJECT_ID # To get the pubsub link running
+
+```
 
 
 ## API Documentation
@@ -129,7 +140,21 @@ Lauches the server and it's database
 We use a nginx reverse proxy, setup to connect to the container's network
 
 ### Ingestion Worker
-==== TODO====
+
+The ingestion worker is deployed in GCP. 
+This is meant to
+- Avoid overloading the basic server
+- Adapt to the limited time footprint ( it is only running a few minutes each day)
+- Leave open the possibility to ingest new music on demande, scaling horizontaly and avoid blocking the main service
+
+We deploy running the CloudBuild pipeline in the audio-processor directory
+
+To deploy yourself:
+- Build and push the Dockerfile of the service
+- Deploy a cloud run service
+- Create a pub/sub topic named `audio-processor-jobs`
+- Pipe the `audio-processor-jobs` to the cloud run service
+
 
 ## License
 
