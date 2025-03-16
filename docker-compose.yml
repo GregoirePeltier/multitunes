@@ -4,17 +4,25 @@ services:
   core-api:
     hostname: multitunes-core-api
     build: ./services/core-api
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+
     networks: 
       - multitunes_network
   db:
     hostname: multitunes-db
-    image: postgres:16
+    image: postgres
     restart: always
     shm_size: 128mb
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data \
     environment:
-      POSTGRES_PASSWORD: ${DATABASE_ADMIN_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
 
     networks: 
       - multitunes_network
