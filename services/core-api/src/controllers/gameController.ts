@@ -174,7 +174,6 @@ export class GameController {
         const vocalsStart = new QuizAudioStartTimes();
         vocalsStart.startTime = 20
         vocalsStart.stem = StemType.VOCALS
-
         return [
             pianoStart,
             otherStart,

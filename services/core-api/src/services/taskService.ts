@@ -33,7 +33,7 @@ export class AudioTaskService {
         const data = JSON.stringify({audioId, jwt_token: token});
         const dataBuffer = Buffer.from(data);
         try {
-            const messageId = audioProcessingTopic.publishMessage({data: dataBuffer});
+            const messageId = await audioProcessingTopic.publishMessage({data: dataBuffer});
             console.log(`Message ${messageId} published.`);
         } catch (error) {
             console.error(

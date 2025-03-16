@@ -3,7 +3,7 @@ import {Game} from '../../models/Game';
 import {Between, QueryBuilder, Repository} from 'typeorm';
 import Mock = jest.Mock;
 import {GameGenre} from "../../models/GameGenre";
-import {Track} from "../../models/Track";
+import {StemType, Track, TrackQuizAudio} from "../../models/Track";
 
 // Create mock repository
 const createMockRepository = () => ({
@@ -381,6 +381,20 @@ describe('GameController', () => {
                 const mockQuizzAudio = mockQuizzAudioRepository
                     .save.mock.results.find(result => (result.value as any).track.id === answerId)?.value as any
                 expect(mockAudioTaskService.processAudio).toHaveBeenCalledWith(mockQuizzAudio.id)
+            }
+        })
+        it("Should create quizz start times for each question",async ()=>{
+            const testDate = new Date('2025-03-20');
+            const testGenre = GameGenre.POP;
+
+            const game= await gameController.generateGame(testDate,testGenre);
+            expect(mockQuizzAudioRepository.save).toHaveBeenCalledTimes(5);
+            const quizzAudios = mockQuizzAudioRepository.save.mock.results.map(result => result.value as TrackQuizAudio)
+            for (let quizzAudio of quizzAudios) {
+                expect(quizzAudio.quizAudioStartTimes).toHaveLength(6)
+                const drums = quizzAudio.quizAudioStartTimes.find(quizAudioStartTime => quizAudioStartTime.stem === StemType.DRUMS)
+                expect(drums).toBeDefined()
+                expect(drums?.startTime).toBe(10)
             }
         })
     })

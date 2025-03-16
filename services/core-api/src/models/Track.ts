@@ -70,7 +70,7 @@ export class TrackQuizAudio {
     @OneToOne(() => Question, question => question.id,{onDelete: "CASCADE"})
     @JoinColumn()
     question:Question
-    @OneToMany(() => QuizAudioStartTimes, quizAudioStartTime => quizAudioStartTime.trackQuizAudio)
+    @OneToMany(() => QuizAudioStartTimes, quizAudioStartTime => quizAudioStartTime.trackQuizAudio,{cascade:true})
     quizAudioStartTimes: QuizAudioStartTimes[];
 }
 
